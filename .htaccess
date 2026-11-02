@@ -1,0 +1,13 @@
+# Usado só se o domínio apontar para a pasta do projeto em vez de public/.
+# Bloqueia tudo o que não é público e encaminha o resto para public/.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # .git, .gitignore, .env… e qualquer ficheiro ou pasta começado por ponto
+    RewriteRule (^|/)\.(?!well-known/) - [F,L]
+    RewriteRule ^(app|data)(/|$) - [F,L]
+    RewriteRule ^(config(\.sample)?\.php|README\.md)$ - [F,L]
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+<IfModule !mod_rewrite.c>
+    Require all denied
+</IfModule>

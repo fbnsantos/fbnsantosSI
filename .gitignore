@@ -1,0 +1,15 @@
+# Configuração e segredos (nunca no git)
+config.php
+.env
+
+# Dados do site: base de dados, cache de imagens de partilha, logs de deploy
+data/*
+!data/.htaccess
+!data/.gitkeep
+
+# Ficheiros enviados no backoffice
+public/uploads/*
+!public/uploads/.htaccess
+
+.DS_Store
+.claude/
