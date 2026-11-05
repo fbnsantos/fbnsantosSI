@@ -182,7 +182,7 @@ function local_image_size(string $src): ?array
     if (!preg_match('#^/(uploads|assets)/[^?\#]+$#', $src) || str_contains($src, '..')) {
         return null;
     }
-    $info = @getimagesize(ROOT . '/public' . rawurldecode($src));
+    $info = @getimagesize(ROOT . rawurldecode($src));
     return $info ? [$info[0], $info[1]] : null;
 }
 

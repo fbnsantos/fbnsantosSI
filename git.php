@@ -7,11 +7,11 @@
  *      Content type application/json, Secret = deploy_secret, evento "push".
  *   2. À mão no browser: https://fbnsantos.com/git.php?token=<deploy_secret>
  *
- * Só toca em ficheiros do repositório: config.php, data/ e public/uploads/ não estão no git e ficam intactos.
+ * Só toca em ficheiros do repositório: config.php, data/ e uploads/ não estão no git e ficam intactos.
  */
 declare(strict_types=1);
 
-define('ROOT', dirname(__DIR__));
+define('ROOT', __DIR__);
 $config = is_file(ROOT . '/config.php') ? require ROOT . '/config.php' : [];
 $secret = (string) ($config['deploy_secret'] ?? '');
 

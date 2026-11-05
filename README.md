@@ -8,10 +8,10 @@ Requisitos: PHP 8.1+ com `pdo_sqlite`, `mbstring`, `fileinfo`, `dom` (e `gd`, op
 ## Estrutura
 
 ```
-public/          ← raiz web (apontar o domínio para aqui)
-  index.php      ← router
-  assets/        ← CSS/JS
-  uploads/       ← imagens enviadas no backoffice
+index.php        ← router (a pasta do projeto é a raiz web)
+git.php          ← deploy automático
+assets/          ← CSS/JS
+uploads/         ← imagens enviadas no backoffice
 app/             ← lógica e vistas (não acessível pela web)
 data/            ← base de dados SQLite (não acessível pela web)
 config.php       ← configuração (copiar de config.sample.php)
@@ -24,14 +24,14 @@ cp config.sample.php config.php   # e mudar setup_key
 ```
 
 ```bash
-SITE_URL=http://localhost:8080 php -S localhost:8080 -t public public/index.php
+SITE_URL=http://localhost:8080 php -S localhost:8080 index.php
 ```
 
 Abrir http://localhost:8080/admin → primeira vez pede a `setup_key` do `config.php` para criar o administrador.
 
 ## Publicar no HostGator (cPanel) com deploy automático
 
-O código vem do GitHub; o servidor só guarda o que não está no git: `config.php`, `data/` (base de dados) e `public/uploads/`.
+O código vem do GitHub; o servidor só guarda o que não está no git: `config.php`, `data/` (base de dados) e `uploads/`.
 
 ### 1. Clonar o repositório
 
@@ -39,15 +39,16 @@ cPanel → **Git™ Version Control** → *Create* → *Clone a Repository*:
 - Clone URL: `https://github.com/<utilizador>/<repositório>.git`
 - Repository Path: `/home/<utilizador-cpanel>/fbnsantos` (fora do `public_html`)
 
-### 2. Apontar o domínio para `public/`
+### 2. Apontar o domínio para a pasta do projeto
 
-- **Domínio adicional/subdomínio:** cPanel → *Domains* → editar a *Document Root* para `fbnsantos/public`.
+- **Domínio adicional/subdomínio:** cPanel → *Domains* → editar a *Document Root* para `fbnsantos`.
 - **Domínio principal** (a raiz é sempre `public_html`): no *Terminal* do cPanel,
   ```bash
-  mv ~/public_html ~/public_html.old && ln -s ~/fbnsantos/public ~/public_html
+  mv ~/public_html ~/public_html.old && ln -s ~/fbnsantos ~/public_html
   ```
-- Alternativa: clonar diretamente para dentro da raiz do domínio. O `.htaccess` da raiz encaminha para `public/`
-  e bloqueia `.git`, `app/`, `data/` e `config.php`.
+- Alternativa: clonar diretamente para dentro da raiz do domínio.
+
+O `.htaccess` da raiz bloqueia `.git`, `app/`, `data/`, `config.php` e `README.md`.
 
 ### 3. Configurar
 
@@ -96,8 +97,9 @@ O repositório pode ser público: não contém segredos. Tudo o que é sensível
 ### Nginx
 
 ```nginx
-root /var/www/fbnsantos/public;
+root /var/www/fbnsantos;
 index index.php;
+location ~ ^/(\.(?!well-known/)|app/|data/|config|README) { deny all; }
 location / { try_files $uri /index.php?$query_string; }
 location ~ ^/uploads/.*\.php$ { deny all; }
 location ~ \.php$ { try_files $uri /index.php; include fastcgi_params; fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; fastcgi_pass unix:/run/php/php-fpm.sock; }
@@ -151,4 +153,4 @@ O conteúdo inicial (textos, perfis e foto do fbnsantos.com) está em `app/seed.
 
 ## Cópias de segurança
 
-Basta copiar `data/site.sqlite` e `public/uploads/`.
+Basta copiar `data/site.sqlite` e `uploads/`.

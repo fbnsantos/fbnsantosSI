@@ -149,7 +149,7 @@ function load_local_image(string $src): ?GdImage
     if (!local_image_size($src)) {
         return null;
     }
-    $data = @file_get_contents(ROOT . '/public' . rawurldecode($src));
+    $data = @file_get_contents(ROOT . rawurldecode($src));
     $im = $data ? @imagecreatefromstring($data) : false;
     return $im ?: null;
 }

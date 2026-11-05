@@ -17,7 +17,7 @@ $flash = flash();
     <meta name="csrf" content="<?= e(csrf_token()) ?>">
     <title><?= e($title ?? 'Backoffice') ?> · Backoffice</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="/assets/admin.css?v=<?= filemtime(ROOT . '/public/assets/admin.css') ?>">
+    <link rel="stylesheet" href="/assets/admin.css?v=<?= filemtime(ROOT . '/assets/admin.css') ?>">
 </head>
 <body class="<?= !empty($bare) ? 'bare' : '' ?>">
 <?php if (empty($bare)): ?>
@@ -40,6 +40,6 @@ $flash = flash();
     <?php if ($flash): ?><div class="flash <?= e($flash['type']) ?>"><?= e($flash['msg']) ?></div><?php endif; ?>
     <?= $content ?>
 </main>
-<script src="/assets/admin.js?v=<?= filemtime(ROOT . '/public/assets/admin.js') ?>"></script>
+<script src="/assets/admin.js?v=<?= filemtime(ROOT . '/assets/admin.js') ?>"></script>
 </body>
 </html>

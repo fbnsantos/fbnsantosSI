@@ -13,7 +13,7 @@ return [
     // Troque por um valor longo e aleatório antes de publicar o site.
     'setup_key' => 'mude-isto',
 
-    // Caminho da base de dados SQLite (deve ficar fora da pasta public/).
+    // Caminho da base de dados SQLite (deve ficar protegida pelo .htaccess).
     'db_path' => __DIR__ . '/data/site.sqlite',
 
     'timezone' => 'Europe/Lisbon',
@@ -21,7 +21,7 @@ return [
     // Tamanho máximo de cada upload, em MB.
     'max_upload_mb' => 10,
 
-    // Deploy automático (public/git.php). Vazio = desativado.
+    // Deploy automático (git.php). Vazio = desativado.
     // Gere um valor aleatório longo, por exemplo: php -r 'echo bin2hex(random_bytes(24));'
     'deploy_secret' => '',
     'deploy_branch' => 'main',

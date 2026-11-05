@@ -8,8 +8,8 @@ data/*
 !data/.gitkeep
 
 # Ficheiros enviados no backoffice
-public/uploads/*
-!public/uploads/.htaccess
+uploads/*
+!uploads/.htaccess
 
 .DS_Store
 .claude/

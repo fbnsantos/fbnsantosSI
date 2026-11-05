@@ -16,7 +16,7 @@ if (has_public_posts()) {
     <?= seo_head($meta ?? []) ?>
     <link rel="preload" href="/assets/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="/assets/site.css?v=<?= filemtime(ROOT . '/public/assets/site.css') ?>">
+    <link rel="stylesheet" href="/assets/site.css?v=<?= filemtime(ROOT . '/assets/site.css') ?>">
 </head>
 <body>
 <a class="skip" href="#main"><?= e(t('Saltar para o conteúdo')) ?></a>

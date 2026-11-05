@@ -1,15 +1,18 @@
 <?php
 declare(strict_types=1);
 
-// Servidor de desenvolvimento (php -S): servir ficheiros estáticos diretamente.
+// Servidor de desenvolvimento (php -S): servir diretamente só os ficheiros estáticos públicos
+// (assets/ e uploads/); app/, data/, .git, config.php… nunca são servidos.
 if (PHP_SAPI === 'cli-server') {
-    $file = __DIR__ . (parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/');
-    if (is_file($file) && !str_ends_with($file, '.php')) {
+    $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/';
+    $file = __DIR__ . $uri;
+    if (preg_match('#^/(assets|uploads)/#', $uri) && !str_contains($uri, '..')
+        && is_file($file) && !preg_match('/\.(php\d?|phtml|phar)$/i', $file)) {
         return false;
     }
 }
 
-require dirname(__DIR__) . '/app/bootstrap.php';
+require __DIR__ . '/app/bootstrap.php';
 
 $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');
 $qs = ($_SERVER['QUERY_STRING'] ?? '') !== '' ? '?' . $_SERVER['QUERY_STRING'] : '';

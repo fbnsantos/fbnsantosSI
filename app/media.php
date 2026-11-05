@@ -13,7 +13,7 @@ const UPLOAD_MIMES = [
 const MAX_IMAGE_WIDTH = 2000;
 
 /**
- * Guarda um ficheiro enviado em public/uploads/AAAA/MM e regista-o na tabela media.
+ * Guarda um ficheiro enviado em uploads/AAAA/MM e regista-o na tabela media.
  * Imagens muito grandes são reduzidas (se a extensão GD estiver disponível).
  */
 function handle_upload(array $file, string $alt = ''): array
@@ -35,7 +35,7 @@ function handle_upload(array $file, string $alt = ''): array
     }
 
     $dir = 'uploads/' . date('Y/m');
-    $abs = ROOT . '/public/' . $dir;
+    $abs = ROOT . '/' . $dir;
     if (!is_dir($abs) && !mkdir($abs, 0775, true) && !is_dir($abs)) {
         throw new RuntimeException('Não foi possível criar a pasta de uploads.');
     }
@@ -120,8 +120,8 @@ function delete_media(int $id): void
     if (!$path) {
         return;
     }
-    $file = realpath(ROOT . '/public' . $path);
-    $uploads = realpath(ROOT . '/public/uploads');
+    $file = realpath(ROOT . $path);
+    $uploads = realpath(ROOT . '/uploads');
     if ($file && $uploads && str_starts_with($file, $uploads . DIRECTORY_SEPARATOR)) {
         unlink($file);
     }

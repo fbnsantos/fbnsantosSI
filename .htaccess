@@ -1,13 +1,44 @@
-# Usado só se o domínio apontar para a pasta do projeto em vez de public/.
-# Bloqueia tudo o que não é público e encaminha o resto para public/.
+# Apache: encaminha tudo o que não for ficheiro real para index.php
+Options -Indexes
+DirectoryIndex index.php
+
+# Proteção extra mesmo sem mod_rewrite (app/ e data/ têm o seu próprio .htaccess)
+<FilesMatch "^(config(\.sample)?\.php|README\.md|\..*)$">
+    Require all denied
+</FilesMatch>
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    # .git, .gitignore, .env… e qualquer ficheiro ou pasta começado por ponto
+
+    # Nunca servir ficheiros escondidos (.git, .env, …)
     RewriteRule (^|/)\.(?!well-known/) - [F,L]
+
+    # Código, dados e configuração não são públicos
     RewriteRule ^(app|data)(/|$) - [F,L]
     RewriteRule ^(config(\.sample)?\.php|README\.md)$ - [F,L]
-    RewriteRule ^(.*)$ public/$1 [L]
+
+    # Forçar HTTPS e domínio sem www (descomente em produção)
+    # RewriteCond %{HTTPS} off [OR]
+    # RewriteCond %{HTTP_HOST} ^www\. [NC]
+    # RewriteRule ^ https://fbnsantos.com%{REQUEST_URI} [L,R=301]
+
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [QSA,L]
 </IfModule>
-<IfModule !mod_rewrite.c>
-    Require all denied
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/avif "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 week"
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json application/xml application/rss+xml text/plain image/svg+xml
 </IfModule>
