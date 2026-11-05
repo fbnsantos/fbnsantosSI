@@ -1,6 +1,7 @@
 # Apache: encaminha tudo o que não for ficheiro real para index.php
 Options -Indexes
-DirectoryIndex index.php index.html
+# index.html primeiro: pastas com app estática (ex.: /treino/) abrem o seu index.html; a raiz não tem, usa index.php.
+DirectoryIndex index.html index.php
 
 # Proteção extra mesmo sem mod_rewrite (app/ e data/ têm o seu próprio .htaccess)
 <FilesMatch "^(config(\.sample)?\.php|README\.md|\..*)$">
@@ -31,8 +32,10 @@ DirectoryIndex index.php index.html
     RewriteCond %{REQUEST_FILENAME}/index.html -f
     RewriteRule ^ - [L]
 
+    # NS: não aplicar aos pedidos internos do DirectoryIndex (senão /pasta/index.php inexistente
+    # seria encaminhado para o router e a pasta entrava num ciclo de redirecionamentos).
     RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteRule ^ index.php [QSA,L]
+    RewriteRule ^ index.php [QSA,L,NS]
 </IfModule>
 
 <IfModule mod_expires.c>
