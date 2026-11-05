@@ -177,3 +177,6 @@ main { min-height: 60vh; padding-bottom: 72px; }
 .footer-links a:hover { color: var(--brick); }
 .footer-bottom { margin-top: 28px; padding-block: 16px 22px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; }
 .footer-bottom a { color: var(--muted); }
+.footer-actions { display: inline-flex; align-items: center; gap: 16px; }
+.footer-admin { border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px; text-decoration: none; }
+.footer-admin:hover { color: var(--brick); border-color: var(--brick); }

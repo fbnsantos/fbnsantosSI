@@ -56,7 +56,10 @@ if (has_public_posts()) {
     </div>
     <div class="wrap-wide footer-bottom">
         <span><?= setting('footer_text') !== '' ? e(setting('footer_text')) : '© ' . date('Y') . ' ' . e(setting('author_name', setting('site_name'))) ?></span>
-        <a href="/feed.xml">RSS</a>
+        <span class="footer-actions">
+            <a href="/feed.xml">RSS</a>
+            <a class="footer-admin" href="/admin" rel="nofollow">Backoffice</a>
+        </span>
     </div>
 </footer>
 </body>
