@@ -94,6 +94,12 @@ function migrate(PDO $pdo): void
 
     // Aprovação do que chega pela API: review_status = 'pending' até ser aprovado no backoffice;
     // source = quem criou/alterou (ex.: "API: ChatGPT").
+    // Chave da API cifrada (para a voltar a mostrar no backoffice); o hash continua a ser o que autentica.
+    $cols = array_column($pdo->query('PRAGMA table_info(api_tokens)')->fetchAll(), 'name');
+    if (!in_array('token_enc', $cols, true)) {
+        $pdo->exec("ALTER TABLE api_tokens ADD COLUMN token_enc TEXT NOT NULL DEFAULT ''");
+    }
+
     foreach (['pages', 'posts'] as $table) {
         $cols = array_column($pdo->query("PRAGMA table_info($table)")->fetchAll(), 'name');
         if (!in_array('review_status', $cols, true)) {

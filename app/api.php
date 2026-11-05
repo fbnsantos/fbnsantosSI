@@ -132,13 +132,51 @@ function api_auth(): array
     return $row;
 }
 
-/** Cria uma chave nova; devolve a chave em claro (só é mostrada uma vez). */
+/** Cria uma chave nova; devolve a chave em claro (guarda o hash e uma cópia cifrada). */
 function api_create_token(string $name): string
 {
     $token = 'fbn_' . bin2hex(random_bytes(24));
-    db()->prepare('INSERT INTO api_tokens (name, token_hash, prefix, created_at) VALUES (?, ?, ?, ?)')
-        ->execute([$name, hash('sha256', $token), substr($token, 0, 10), now()]);
+    db()->prepare('INSERT INTO api_tokens (name, token_hash, prefix, token_enc, created_at) VALUES (?, ?, ?, ?, ?)')
+        ->execute([$name, hash('sha256', $token), substr($token, 0, 10), api_token_encrypt($token), now()]);
     return $token;
+}
+
+/*
+ * A chave também fica guardada cifrada (AES-256-GCM) para o backoffice a poder voltar a mostrar.
+ * A chave de cifra deriva do setup_key do config.php, que não está na base de dados: quem só tiver
+ * uma cópia da base de dados não consegue ler as chaves. Se o setup_key mudar, deixam de poder ser mostradas
+ * (continuam a funcionar).
+ */
+function api_cipher_key(): ?string
+{
+    $secret = (string) config('setup_key', '');
+    if ($secret === '' || $secret === 'mude-isto' || !function_exists('openssl_encrypt')) {
+        return null;
+    }
+    return hash_hmac('sha256', 'api-token-encryption', $secret, true);
+}
+
+function api_token_encrypt(string $token): string
+{
+    $key = api_cipher_key();
+    if ($key === null) {
+        return '';
+    }
+    $iv = random_bytes(12);
+    $tag = '';
+    $enc = openssl_encrypt($token, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag);
+    return $enc === false ? '' : base64_encode($iv . $tag . $enc);
+}
+
+function api_token_decrypt(string $stored): ?string
+{
+    $key = api_cipher_key();
+    $raw = base64_decode($stored, true);
+    if ($key === null || $raw === false || strlen($raw) < 29) {
+        return null;
+    }
+    $plain = openssl_decrypt(substr($raw, 28), 'aes-256-gcm', $key, OPENSSL_RAW_DATA, substr($raw, 0, 12), substr($raw, 12, 16));
+    return $plain === false ? null : $plain;
 }
 
 /* ---------- Conteúdos ---------- */

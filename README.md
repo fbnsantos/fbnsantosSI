@@ -155,7 +155,7 @@ O conteúdo inicial (textos, perfis e foto do fbnsantos.com) está em `app/seed.
 
 API REST em `/api` para criar e editar artigos, páginas e imagens. Especificação OpenAPI 3.1 em `/api/openapi.json`.
 
-- Chaves criadas e revogadas no backoffice em **API / IA**. A chave só é mostrada uma vez; guarda-se apenas o hash.
+- Chaves criadas e revogadas no backoffice em **API / IA**. A autenticação usa só o hash; a chave fica também cifrada (com uma chave derivada do `setup_key`) para o botão *Mostrar instruções* a poder voltar a mostrar.
 - Autenticação: `Authorization: Bearer <chave>` (ou `X-API-Key: <chave>`). Falhas repetidas bloqueiam o IP durante 15 minutos.
 - O conteúdo passa pelas mesmas validações e pelo mesmo filtro de HTML do editor.
 - **Aprovação obrigatória:** a API não consegue publicar. Tudo o que cria ou altera fica *pendente* e invisível no site

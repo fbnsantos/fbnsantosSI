@@ -48,8 +48,9 @@ $curl = "curl -X POST {$apiBase}/posts \\\n  -H \"Authorization: Bearer {$key}\"
 
 <?php if ($newToken): ?>
     <div class="card api-new-key">
-        <h2>Chave criada</h2>
-        <p>Copie-a agora: por segurança <strong>não volta a ser mostrada</strong>. As instruções abaixo já a incluem.</p>
+        <h2><?= $shown['created'] ? 'Chave criada' : 'Chave' ?>: <?= e($shown['name']) ?></h2>
+        <p>As <a href="#instrucoes">instruções para o assistente</a> abaixo já incluem esta chave.
+            Ao sair ou recarregar a página deixa de ser mostrada; pode voltar a vê-la com <em>Mostrar instruções</em>.</p>
         <p><code class="api-key"><?= e($newToken) ?></code>
             <button type="button" class="btn small" data-copy="<?= e($newToken) ?>">Copiar</button></p>
     </div>
@@ -73,7 +74,15 @@ $curl = "curl -X POST {$apiBase}/posts \\\n  -H \"Authorization: Bearer {$key}\"
                     <td><code><?= e($t['prefix']) ?>…</code></td>
                     <td><?= e(format_date($t['created_at'])) ?></td>
                     <td><?= $t['last_used_at'] ? e(format_date($t['last_used_at'])) : '<span class="muted">nunca</span>' ?></td>
-                    <td>
+                    <td class="review-actions">
+                        <?php if ($t['token_enc'] !== ''): ?>
+                            <form method="post" action="/admin/api/tokens/<?= (int) $t['id'] ?>/show">
+                                <?= csrf_field() ?>
+                                <button class="btn small">Mostrar instruções</button>
+                            </form>
+                        <?php else: ?>
+                            <span class="muted small" title="Criada antes desta opção: só existe o hash. Crie uma nova chave para ver as instruções com ela.">não recuperável</span>
+                        <?php endif; ?>
                         <form method="post" action="/admin/api/tokens/<?= (int) $t['id'] ?>/delete">
                             <?= csrf_field() ?>
                             <button class="btn small" data-confirm="Revogar a chave &quot;<?= e($t['name']) ?>&quot;? As ferramentas que a usam deixam de funcionar.">Revogar</button>
@@ -86,10 +95,10 @@ $curl = "curl -X POST {$apiBase}/posts \\\n  -H \"Authorization: Bearer {$key}\"
     <?php endif; ?>
 </div>
 
-<div class="card">
-    <h2>2. Instruções para o assistente</h2>
+<div class="card<?= $newToken ? ' api-new-key' : '' ?>" id="instrucoes">
+    <h2>2. Instruções para o assistente<?= $newToken ? ' — com a chave "' . e($shown['name']) . '"' : '' ?></h2>
     <p class="muted">Cole este texto nas instruções do GPT, num projeto do Claude ou diretamente na conversa.
-        <?= $newToken ? 'Já inclui a chave nova.' : 'Substitua <code>&lt;A_SUA_CHAVE&gt;</code> pela chave (ou crie uma nova para a ver aqui).' ?></p>
+        <?= $newToken ? 'Já inclui a chave.' : 'Use <em>Mostrar instruções</em> ao lado de uma chave para as ver com ela incluída, ou substitua <code>&lt;A_SUA_CHAVE&gt;</code>.' ?></p>
     <textarea class="api-instructions" rows="14" readonly><?= e($instructions) ?></textarea>
     <p><button type="button" class="btn" data-copy="<?= e($instructions) ?>">Copiar instruções</button></p>
 </div>

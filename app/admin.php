@@ -78,8 +78,21 @@ function route_admin(string $sub, string $method): void
         require_once ROOT . '/app/api.php';
         $name = trim((string) ($_POST['name'] ?? '')) ?: 'Sem nome';
         session_boot();
-        $_SESSION['new_api_token'] = api_create_token(mb_substr($name, 0, 80));
-        redirect('/admin/api');
+        $_SESSION['new_api_token'] = ['token' => api_create_token(mb_substr($name, 0, 80)), 'name' => $name, 'created' => true];
+        redirect('/admin/api#instrucoes');
+    } elseif (preg_match('#^/api/tokens/(\d+)/show$#', $sub, $m) && $method === 'POST') {
+        require_once ROOT . '/app/api.php';
+        $st = db()->prepare('SELECT * FROM api_tokens WHERE id = ?');
+        $st->execute([(int) $m[1]]);
+        $row = $st->fetch();
+        $token = $row ? api_token_decrypt($row['token_enc']) : null;
+        if (!$token) {
+            flash('Esta chave não pode ser mostrada (foi criada antes desta opção ou o setup_key mudou). Crie uma nova.', 'error');
+            redirect('/admin/api');
+        }
+        session_boot();
+        $_SESSION['new_api_token'] = ['token' => $token, 'name' => $row['name'], 'created' => false];
+        redirect('/admin/api#instrucoes');
     } elseif (preg_match('#^/api/tokens/(\d+)/delete$#', $sub, $m) && $method === 'POST') {
         db()->prepare('DELETE FROM api_tokens WHERE id = ?')->execute([(int) $m[1]]);
         flash('Chave revogada: deixou de funcionar.');
@@ -141,13 +154,16 @@ function review_reject(string $type, int $id): void
 function admin_api(): void
 {
     session_boot();
-    // A chave nova só é mostrada uma vez, logo a seguir a ser criada.
-    $newToken = $_SESSION['new_api_token'] ?? null;
+    // Chave acabada de criar ou pedida em "Mostrar instruções"; mostrada só neste pedido.
+    $shown = $_SESSION['new_api_token'] ?? null;
     unset($_SESSION['new_api_token']);
+    $shown = is_array($shown) ? $shown : null;
+    $newToken = $shown['token'] ?? null;
     admin_render('api', [
         'title' => 'API / IA',
         'tokens' => db()->query('SELECT * FROM api_tokens ORDER BY id DESC')->fetchAll(),
         'newToken' => $newToken,
+        'shown' => $shown,
         'apiBase' => abs_url('/api'),
         'openapiUrl' => abs_url('/api/openapi.json'),
     ]);
