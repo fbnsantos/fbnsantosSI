@@ -2,6 +2,7 @@
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
 $nav = [
     '/admin' => 'Painel',
+    '/admin/stats' => 'Estatísticas',
     '/admin/pages' => 'Páginas',
     '/admin/posts' => 'Artigos',
     '/admin/review' => 'Para aprovar',

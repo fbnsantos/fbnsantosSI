@@ -79,6 +79,7 @@ function show_home(): void
             'dateModified' => iso_date($page['updated_at']),
         ]], video_schemas($page['content'], setting('site_name'), setting('site_description'), iso_date($page['updated_at']))),
     ];
+    track_view('home', isset($page['id']) ? (int) $page['id'] : null);
     render('home', compact('page', 'posts', 'meta'));
 }
 
@@ -115,6 +116,9 @@ function show_page(string $slug): void
             breadcrumb_schema([[t('Início'), '/'], [$page['title'], '/' . $page['slug']]]),
         ], video_schemas($page['content'], $page['title'], $description, iso_date($page['created_at']))),
     ];
+    if (!$preview) {
+        track_view('page', (int) $page['id']);
+    }
     render('page', compact('page', 'meta', 'preview'));
 }
 
@@ -154,6 +158,7 @@ function show_blog(): void
             breadcrumb_schema([[t('Início'), '/'], [$title, '/blog']]),
         ],
     ];
+    track_view('blog');
     render('blog', compact('posts', 'meta', 'title', 'current', 'pages'));
 }
 
@@ -211,11 +216,15 @@ function show_post(string $slug): void
             breadcrumb_schema([[t('Início'), '/'], [setting('blog_title', 'Blog'), '/blog'], [$post['title'], $url]]),
         ], video_schemas($post['content'], $post['title'], $description, iso_date($post['published_at']))),
     ];
+    if (!$preview) {
+        track_view('post', (int) $post['id']);
+    }
     render('post', compact('post', 'meta', 'preview', 'tags'));
 }
 
 function not_found(): void
 {
     http_response_code(404);
+    track_view('404');
     render('404', ['meta' => ['title' => t('Página não encontrada'), 'path' => $_SERVER['REQUEST_URI'] ?? '/', 'noindex' => true]]);
 }

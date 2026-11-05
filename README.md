@@ -167,6 +167,21 @@ API REST em `/api` para criar e editar artigos, páginas e imagens. Especificaç
 curl -H "Authorization: Bearer <chave>" https://fbnsantos.com/api/posts
 ```
 
+## Estatísticas
+
+O backoffice tem **Estatísticas** (`/admin/stats`): visualizações e visitantes por dia, páginas mais vistas,
+origem das visitas (pesquisa, assistentes de IA, redes sociais, outros sites, direto), sites de origem, país, idioma,
+dispositivo, sistema, navegador, pedidos de robôs (Googlebot, GPTBot, ClaudeBot…) e erros 404.
+As listas de páginas e artigos mostram o total de visualizações de cada um.
+
+- Feito pelo próprio site (`app/stats.php`): sem cookies, sem JavaScript, sem serviços externos, sem banner de consentimento.
+- Não se guarda o IP. O visitante é um hash diário (IP + navegador + `setup_key` + dia): conta visitantes únicos num dia,
+  mas não permite seguir ninguém entre dias.
+- Da origem guarda-se só o domínio. Links com `?utm_source=` (o ChatGPT acrescenta `utm_source=chatgpt.com`) também contam.
+- Robôs e as visitas com sessão no backoffice não contam como visitas. Os dados com mais de 13 meses são apagados.
+- O país só é conhecido atrás da Cloudflare (`CF-IPCountry`) ou com GeoIP no alojamento; senão usa-se o idioma do navegador.
+- Não conta ficheiros estáticos servidos diretamente pelo Apache (ex.: a app em `/treino/`).
+
 ## Cópias de segurança
 
 Basta copiar `data/site.sqlite` e `uploads/`.

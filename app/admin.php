@@ -66,6 +66,10 @@ function route_admin(string $sub, string $method): void
         admin_password($method);
     } elseif ($sub === '/update') {
         admin_update($method);
+    } elseif ($sub === '/stats') {
+        $days = (int) ($_GET['dias'] ?? 30);
+        $days = in_array($days, [7, 30, 90, 365], true) ? $days : 30;
+        admin_render('stats', ['title' => 'Estatísticas', 'r' => stats_report($days)]);
     } elseif ($sub === '/review') {
         admin_review();
     } elseif (preg_match('#^/review/(pages|posts)/(\d+)/(approve|reject)$#', $sub, $m) && $method === 'POST') {
@@ -305,6 +309,7 @@ function admin_dashboard(): void
         'posts' => (int) db()->query('SELECT COUNT(*) FROM posts')->fetchColumn(),
         'drafts' => (int) db()->query('SELECT COUNT(*) FROM posts WHERE published = 0')->fetchColumn(),
         'media' => (int) db()->query('SELECT COUNT(*) FROM media')->fetchColumn(),
+        'views30' => stats_views_since(date('Y-m-d', strtotime('-29 days'))),
     ];
     $recent = db()->query("SELECT 'posts' AS type, id, title, updated_at FROM posts
         UNION ALL SELECT 'pages', id, title, updated_at FROM pages ORDER BY updated_at DESC LIMIT 8")->fetchAll();
@@ -348,7 +353,14 @@ function admin_list(string $type): void
 {
     $order = $type === 'pages' ? "slug <> 'home', menu_order, title" : 'published_at DESC';
     $items = db()->query("SELECT * FROM $type ORDER BY $order")->fetchAll();
-    admin_render('list', ['title' => $type === 'pages' ? 'Páginas' : 'Artigos'] + compact('type', 'items'));
+    $views = stats_views_by_content($type === 'pages' ? 'page' : 'post');
+    if ($type === 'pages') {
+        // A página inicial é registada como "home".
+        foreach (stats_views_by_content('home') as $id => $count) {
+            $views[$id] = ($views[$id] ?? 0) + $count;
+        }
+    }
+    admin_render('list', ['title' => $type === 'pages' ? 'Páginas' : 'Artigos'] + compact('type', 'items', 'views'));
 }
 
 function empty_item(string $type): array

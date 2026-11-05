@@ -13,6 +13,7 @@
             <th>Endereço</th>
             <th>Estado</th>
             <th><?= $type === 'pages' ? 'Menu' : 'Data' ?></th>
+            <th class="num"><a href="/admin/stats" class="muted">Visualizações</a></th>
         </tr>
         </thead>
         <tbody>
@@ -37,6 +38,7 @@
                         <?= e(format_date($it['published_at'])) ?>
                     <?php endif; ?>
                 </td>
+                <td class="num muted"><?= number_format($views[$it['id']] ?? 0, 0, ',', ' ') ?></td>
             </tr>
         <?php endforeach; ?>
         </tbody>

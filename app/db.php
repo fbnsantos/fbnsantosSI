@@ -82,6 +82,31 @@ function migrate(PDO $pdo): void
         ip TEXT NOT NULL,
         attempted_at INTEGER NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS page_views (
+        id INTEGER PRIMARY KEY,
+        created_at TEXT NOT NULL,
+        day TEXT NOT NULL,
+        path TEXT NOT NULL,
+        content_type TEXT NOT NULL DEFAULT '',
+        content_id INTEGER,
+        visitor TEXT NOT NULL,
+        referrer_host TEXT NOT NULL DEFAULT '',
+        source TEXT NOT NULL DEFAULT '',
+        channel TEXT NOT NULL DEFAULT '',
+        country TEXT NOT NULL DEFAULT '',
+        language TEXT NOT NULL DEFAULT '',
+        device TEXT NOT NULL DEFAULT '',
+        os TEXT NOT NULL DEFAULT '',
+        browser TEXT NOT NULL DEFAULT ''
+    );
+    CREATE INDEX IF NOT EXISTS page_views_day ON page_views (day);
+    CREATE INDEX IF NOT EXISTS page_views_content ON page_views (content_type, content_id);
+    CREATE TABLE IF NOT EXISTS bot_hits (
+        day TEXT NOT NULL,
+        bot TEXT NOT NULL,
+        hits INTEGER NOT NULL DEFAULT 0,
+        PRIMARY KEY (day, bot)
+    );
     CREATE TABLE IF NOT EXISTS api_tokens (
         id INTEGER PRIMARY KEY,
         name TEXT NOT NULL,

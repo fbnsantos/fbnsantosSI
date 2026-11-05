@@ -17,6 +17,7 @@
 <div class="stats">
     <a class="stat" href="/admin/posts"><b><?= $counts['posts'] ?></b><span>artigos<?= $counts['drafts'] ? " ({$counts['drafts']} rascunhos)" : '' ?></span></a>
     <a class="stat" href="/admin/pages"><b><?= $counts['pages'] ?></b><span>páginas</span></a>
+    <a class="stat" href="/admin/stats"><b><?= $counts['views30'] ?></b><span>visualizações (30 dias)</span></a>
     <a class="stat" href="/admin/media"><b><?= $counts['media'] ?></b><span>imagens e ficheiros</span></a>
 </div>
 
