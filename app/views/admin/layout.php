@@ -6,6 +6,7 @@ $nav = [
     '/admin/posts' => 'Artigos',
     '/admin/media' => 'Imagens',
     '/admin/settings' => 'Definições',
+    '/admin/update' => 'Atualizar',
 ];
 $flash = flash();
 ?><!doctype html>

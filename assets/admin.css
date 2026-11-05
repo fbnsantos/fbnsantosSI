@@ -145,3 +145,4 @@ table.card { padding: 0; overflow: hidden; display: table; }
 .media-item .name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .media-item .row { display: flex; gap: 6px; align-items: center; }
 .media-item .row input { margin: 0; padding: 4px 8px; font-size: 0.8rem; }
+.deploy-log { white-space: pre-wrap; font-size: 0.8rem; max-height: 360px; overflow: auto; }

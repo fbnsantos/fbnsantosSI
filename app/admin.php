@@ -64,6 +64,8 @@ function route_admin(string $sub, string $method): void
         admin_settings($method);
     } elseif ($sub === '/password') {
         admin_password($method);
+    } elseif ($sub === '/update') {
+        admin_update($method);
     } else {
         http_response_code(404);
         admin_render('message', ['title' => 'Não encontrado', 'message' => 'Esta página do backoffice não existe.']);
@@ -73,6 +75,25 @@ function route_admin(string $sub, string $method): void
 function admin_render(string $view, array $vars = []): void
 {
     render("admin/$view", $vars, 'admin/layout');
+}
+
+/* ---------- Atualizar o site a partir do GitHub (mesmo código do git.php) ---------- */
+
+function admin_update(string $method): void
+{
+    global $CONFIG;
+    require_once ROOT . '/app/deploy.php';
+    $config = (array) $CONFIG;
+    $result = null;
+    if ($method === 'POST') {
+        $result = deploy_run($config, 'backoffice');
+    }
+    admin_render('update', [
+        'title' => 'Atualizar site',
+        'branch' => deploy_branch($config),
+        'version' => deploy_current_version($config),
+        'result' => $result,
+    ]);
 }
 
 /* ---------- Autenticação ---------- */

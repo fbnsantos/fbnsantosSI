@@ -6,6 +6,7 @@
  *   1. Webhook do GitHub (recomendado): Settings → Webhooks → Payload URL https://fbnsantos.com/git.php,
  *      Content type application/json, Secret = deploy_secret, evento "push".
  *   2. À mão no browser: https://fbnsantos.com/git.php?token=<deploy_secret>
+ *   3. No backoffice: menu "Atualizar" (/admin/update), sem precisar do segredo.
  *
  * Só toca em ficheiros do repositório: config.php, data/ e uploads/ não estão no git e ficam intactos.
  */
@@ -50,36 +51,10 @@ if ($event === 'push') {
         exit("Ignorado: push para $ref (só faço deploy de $branch)\n");
     }
 }
-if (!function_exists('shell_exec')) {
+
+require ROOT . '/app/deploy.php';
+$result = deploy_run($config, $event);
+if (!$result['ok']) {
     http_response_code(500);
-    exit("shell_exec está desativado neste servidor.\n");
 }
-if (!preg_match('/^[A-Za-z0-9._\/-]+$/', $branch)) {
-    http_response_code(500);
-    exit("deploy_branch inválido.\n");
-}
-
-// Em alguns alojamentos o PHP corre sem HOME, e o git precisa dele.
-if (!empty($config['deploy_home'])) {
-    putenv('HOME=' . $config['deploy_home']);
-} elseif (!getenv('HOME') && function_exists('posix_getpwuid')) {
-    putenv('HOME=' . (posix_getpwuid(posix_geteuid())['dir'] ?? ROOT));
-}
-
-$git = 'git -c safe.directory=' . escapeshellarg(ROOT) . ' -C ' . escapeshellarg(ROOT);
-$out = '';
-foreach ([
-    "$git fetch --prune origin " . escapeshellarg($branch),
-    "$git reset --hard " . escapeshellarg("origin/$branch"),
-    "$git log -1 --format='%h %s (%cr)'",
-] as $cmd) {
-    $out .= '$ ' . preg_replace('/^git .*? -C \S+ /', 'git ', $cmd) . "\n" . shell_exec("$cmd 2>&1") . "\n";
-}
-
-// Garante que o PHP usa o código novo de imediato.
-if (function_exists('opcache_reset')) {
-    opcache_reset();
-}
-
-@file_put_contents(ROOT . '/data/deploy.log', date('c') . " [$event]\n$out\n", FILE_APPEND | LOCK_EX);
-echo $out, "Deploy concluído.\n";
+echo $result['output'], $result['ok'] ? "Deploy concluído.\n" : "Deploy falhou.\n";
