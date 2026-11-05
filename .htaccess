@@ -1,6 +1,6 @@
 # Apache: encaminha tudo o que não for ficheiro real para index.php
 Options -Indexes
-DirectoryIndex index.php
+DirectoryIndex index.php index.html
 
 # Proteção extra mesmo sem mod_rewrite (app/ e data/ têm o seu próprio .htaccess)
 <FilesMatch "^(config(\.sample)?\.php|README\.md|\..*)$">
@@ -25,6 +25,11 @@ DirectoryIndex index.php
     # RewriteCond %{HTTPS} off [OR]
     # RewriteCond %{HTTP_HOST} ^www\. [NC]
     # RewriteRule ^ https://fbnsantos.com%{REQUEST_URI} [L,R=301]
+
+    # Pastas com app estática própria (ex.: /treino/ com index.html) são servidas tal como estão.
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteCond %{REQUEST_FILENAME}/index.html -f
+    RewriteRule ^ - [L]
 
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [QSA,L]
