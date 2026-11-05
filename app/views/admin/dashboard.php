@@ -6,6 +6,14 @@
     </div>
 </div>
 
+<?php if ($pending = pending_review_count()): ?>
+    <div class="card review-banner pending">
+        <div><strong><?= $pending ?> <?= $pending === 1 ? 'conteúdo' : 'conteúdos' ?> à espera da sua aprovação</strong>
+            <span class="muted">· enviados pelo ChatGPT, Claude ou outra ferramenta</span></div>
+        <a class="btn small primary" href="/admin/review">Rever</a>
+    </div>
+<?php endif; ?>
+
 <div class="stats">
     <a class="stat" href="/admin/posts"><b><?= $counts['posts'] ?></b><span>artigos<?= $counts['drafts'] ? " ({$counts['drafts']} rascunhos)" : '' ?></span></a>
     <a class="stat" href="/admin/pages"><b><?= $counts['pages'] ?></b><span>páginas</span></a>

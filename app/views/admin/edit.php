@@ -2,7 +2,31 @@
 $isPost = $type === 'posts';
 $isHome = !$isPost && $item['slug'] === 'home';
 $prefix = $isPost ? '/blog/' : '/';
+$review = $item['id'] ? ($item['review_status'] ?? '') : '';
 ?>
+<?php if ($review === 'pending' || $review === 'rejected'): ?>
+    <div class="card review-banner <?= $review ?>">
+        <div>
+            <strong><?= $review === 'pending' ? 'À espera da sua aprovação' : 'Rejeitado' ?></strong>
+            <span class="muted">· recebido pela <?= e($item['source'] ?? '') ?: 'API' ?>. Invisível no site até ser aprovado.
+                Se fizer alterações, guarde-as antes de aprovar.</span>
+        </div>
+        <div class="review-actions">
+            <form method="post" action="/admin/review/<?= $type ?>/<?= (int) $item['id'] ?>/approve">
+                <?= csrf_field() ?>
+                <input type="hidden" name="back" value="/admin/<?= $type ?>/<?= (int) $item['id'] ?>">
+                <button class="btn small primary" data-confirm="Publicar no site?">Aprovar e publicar</button>
+            </form>
+            <?php if ($review === 'pending'): ?>
+                <form method="post" action="/admin/review/<?= $type ?>/<?= (int) $item['id'] ?>/reject">
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="back" value="/admin/<?= $type ?>/<?= (int) $item['id'] ?>">
+                    <button class="btn small" data-confirm="Rejeitar? Fica como rascunho, invisível no site.">Rejeitar</button>
+                </form>
+            <?php endif; ?>
+        </div>
+    </div>
+<?php endif; ?>
 <form id="editor-form" method="post" enctype="multipart/form-data"
       action="/admin/<?= $type ?>/<?= $item['id'] ?: 'new' ?>">
     <?= csrf_field() ?>

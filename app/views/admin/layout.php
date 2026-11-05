@@ -4,6 +4,7 @@ $nav = [
     '/admin' => 'Painel',
     '/admin/pages' => 'Páginas',
     '/admin/posts' => 'Artigos',
+    '/admin/review' => 'Para aprovar',
     '/admin/media' => 'Imagens',
     '/admin/settings' => 'Definições',
     '/admin/api' => 'API / IA',
@@ -28,7 +29,8 @@ $flash = flash();
         <nav>
             <?php foreach ($nav as $href => $label):
                 $active = $href === '/admin' ? $path === '/admin' : str_starts_with((string) $path, $href); ?>
-                <a href="<?= $href ?>"<?= $active ? ' class="active"' : '' ?>><?= $label ?></a>
+                <a href="<?= $href ?>"<?= $active ? ' class="active"' : '' ?>><?= $label ?><?php
+                    if ($href === '/admin/review' && ($pending = pending_review_count())): ?> <span class="count"><?= $pending ?></span><?php endif; ?></a>
             <?php endforeach; ?>
         </nav>
         <div class="side-foot">

@@ -91,6 +91,24 @@ function migrate(PDO $pdo): void
         last_used_at TEXT
     );
     SQL);
+
+    // Aprovação do que chega pela API: review_status = 'pending' até ser aprovado no backoffice;
+    // source = quem criou/alterou (ex.: "API: ChatGPT").
+    foreach (['pages', 'posts'] as $table) {
+        $cols = array_column($pdo->query("PRAGMA table_info($table)")->fetchAll(), 'name');
+        if (!in_array('review_status', $cols, true)) {
+            $pdo->exec("ALTER TABLE $table ADD COLUMN review_status TEXT NOT NULL DEFAULT ''");
+        }
+        if (!in_array('source', $cols, true)) {
+            $pdo->exec("ALTER TABLE $table ADD COLUMN source TEXT NOT NULL DEFAULT ''");
+        }
+    }
+}
+
+function pending_review_count(): int
+{
+    return (int) db()->query("SELECT (SELECT COUNT(*) FROM posts WHERE review_status = 'pending')
+        + (SELECT COUNT(*) FROM pages WHERE review_status = 'pending')")->fetchColumn();
 }
 
 function seed(PDO $pdo): void

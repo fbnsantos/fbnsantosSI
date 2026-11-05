@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#152b38"><link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png"><link rel="stylesheet" href="style.css">
+<title>Treino por Intervalos</title><script src="app.js" defer></script>
+</head>
+<body>
+<header><p class="eyebrow">O TEU RITMO, O TEU TREINO</p><h1>Treino por Intervalos</h1></header>
+<section class="card" aria-labelledby="settingsTitle">
+<h2 id="settingsTitle">Configurações de treino</h2>
+<label for="presets">Treinos guardados</label><select id="presets"></select>
+<div class="actions"><button id="new" class="secondary">Nova configuração</button><button id="delete" class="secondary">Eliminar</button></div>
+<form id="settings">
+<label for="name">Nome da configuração</label><input id="name" maxlength="80" required value="Treino habitual">
+<div class="fields">
+<label>Exercícios<input id="rounds" type="number" min="1" max="1000" step="1" required value="10"></label>
+<label>Exercício (s)<input id="work" type="number" min="1" max="86400" step="1" required value="70"></label>
+<label>Descanso (s)<input id="rest" type="number" min="0" max="86400" step="1" required value="10"></label>
+</div>
+<p class="hint">A duração aplica-se a cada exercício. O descanso acontece entre exercícios.</p>
+<button id="save" type="submit">Guardar configuração</button><span id="dirty" class="hint"></span>
+</form>
+<p id="message" role="status" aria-live="polite"></p>
+<p class="hint">Guardado apenas neste navegador e dispositivo. Limpar os dados do site elimina os treinos.</p>
+</section>
+<section class="card timer" aria-label="Temporizador">
+<div id="phase" role="status">Pronto para começar</div><div id="clock" role="timer" aria-live="off">01:10</div>
+<div id="progress">Exercício 0 / 10</div>
+<div class="actions"><button id="start">Iniciar</button><button id="pause" disabled>Pausar</button><button id="reset" class="secondary">Reiniciar</button></div>
+<label class="voice"><input id="keepScreenOn" type="checkbox" checked> Manter ecrã ligado durante o treino</label>
+<p id="screenStatus" class="hint" role="status">O ecrã será mantido ligado enquanto o treino estiver a decorrer e a aplicação estiver visível.</p>
+<label class="voice"><input id="tones" type="checkbox" checked> Sinais sonoros</label>
+<button id="testTone" type="button" class="secondary">Ativar e testar sinais sonoros</button>
+<p id="toneStatus" class="hint" role="status">Toca aqui antes do treino: deves ouvir dois sinais. Estes sinais funcionam sem o motor de voz do Android.</p>
+<details><summary>Teste de áudio direto</summary><p class="hint">Se o botão não tocar, experimenta este leitor.</p><audio controls preload="none" src="audio/beep.wav"></audio></details>
+<label class="voice"><input id="voice" type="checkbox" checked> Avisos por voz em português</label>
+<label for="voiceChoice">Voz de português</label><select id="voiceChoice"></select>
+<button id="testVoice" type="button" class="secondary">Testar voz</button>
+<p id="audioStatus" class="hint" role="status">Antes de treinar, toca em Testar voz e aumenta o volume multimédia.</p>
+<p class="hint">Mantém a aplicação aberta e o ecrã desbloqueado durante o treino.</p>
+</section>
+<p class="hint">Versão 2.2.1 · Manter ecrã ligado</p>
+<p id="offline" class="hint" role="status"></p>
+</body></html>

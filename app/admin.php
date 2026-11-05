@@ -66,6 +66,12 @@ function route_admin(string $sub, string $method): void
         admin_password($method);
     } elseif ($sub === '/update') {
         admin_update($method);
+    } elseif ($sub === '/review') {
+        admin_review();
+    } elseif (preg_match('#^/review/(pages|posts)/(\d+)/(approve|reject)$#', $sub, $m) && $method === 'POST') {
+        $m[3] === 'approve' ? review_approve($m[1], (int) $m[2]) : review_reject($m[1], (int) $m[2]);
+        $back = (string) ($_POST['back'] ?? '');
+        redirect(preg_match('#^/admin/[a-z0-9/]*$#', $back) ? $back : '/admin/review');
     } elseif ($sub === '/api') {
         admin_api();
     } elseif ($sub === '/api/tokens' && $method === 'POST') {
@@ -87,6 +93,47 @@ function route_admin(string $sub, string $method): void
 function admin_render(string $view, array $vars = []): void
 {
     render("admin/$view", $vars, 'admin/layout');
+}
+
+/* ---------- Aprovação do que chega pela API ---------- */
+
+function admin_review(): void
+{
+    $items = [];
+    foreach (['posts', 'pages'] as $type) {
+        foreach (db()->query("SELECT * FROM $type WHERE review_status = 'pending' ORDER BY updated_at DESC")->fetchAll() as $r) {
+            $items[] = ['type' => $type] + $r;
+        }
+    }
+    usort($items, fn($a, $b) => strcmp($b['updated_at'], $a['updated_at']));
+    admin_render('review', ['title' => 'Para aprovar', 'items' => $items]);
+}
+
+function review_approve(string $type, int $id): void
+{
+    $st = db()->prepare("SELECT * FROM $type WHERE id = ?");
+    $st->execute([$id]);
+    $row = $st->fetch();
+    if (!$row) {
+        flash('Não encontrado.', 'error');
+        return;
+    }
+    $now = now();
+    db()->prepare("UPDATE $type SET published = 1, review_status = '', updated_at = ? WHERE id = ?")->execute([$now, $id]);
+    // A data do artigo passa a ser a da aprovação (exceto se foi pedida uma data futura, que fica agendada).
+    if ($type === 'posts' && $row['published_at'] < $now) {
+        db()->prepare('UPDATE posts SET published_at = ? WHERE id = ?')->execute([$now, $id]);
+    }
+    if (!$row['noindex']) {
+        indexnow_ping([public_url($type, $row)]);
+    }
+    flash('Aprovado e publicado: "' . $row['title'] . '".');
+}
+
+function review_reject(string $type, int $id): void
+{
+    db()->prepare("UPDATE $type SET published = 0, review_status = 'rejected', updated_at = ? WHERE id = ?")->execute([now(), $id]);
+    flash('Rejeitado: fica como rascunho, invisível no site. Pode apagá-lo ou editá-lo quando quiser.');
 }
 
 /* ---------- API para ChatGPT, Claude e outras ferramentas ---------- */
@@ -338,6 +385,11 @@ function admin_save(string $type, ?int $id): void
         $item['tags'] = implode(', ', array_filter(array_map('trim', explode(',', $in('tags')))));
         $ts = strtotime($in('published_at'));
         $item['published_at'] = $ts ? date('Y-m-d H:i:s', $ts) : now();
+    }
+
+    // Publicar no editor conta como aprovação.
+    if ($item['published']) {
+        $item['review_status'] = '';
     }
 
     $errors = content_errors($type, $item, $id);

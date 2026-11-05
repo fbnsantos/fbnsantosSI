@@ -157,8 +157,10 @@ API REST em `/api` para criar e editar artigos, páginas e imagens. Especificaç
 
 - Chaves criadas e revogadas no backoffice em **API / IA**. A chave só é mostrada uma vez; guarda-se apenas o hash.
 - Autenticação: `Authorization: Bearer <chave>` (ou `X-API-Key: <chave>`). Falhas repetidas bloqueiam o IP durante 15 minutos.
-- O conteúdo passa pelas mesmas validações e pelo mesmo filtro de HTML do editor. O que é criado pela API fica em
-  rascunho, a não ser que se envie `"published": true`.
+- O conteúdo passa pelas mesmas validações e pelo mesmo filtro de HTML do editor.
+- **Aprovação obrigatória:** a API não consegue publicar. Tudo o que cria ou altera fica *pendente* e invisível no site
+  até ser aprovado no backoffice em **Para aprovar** (ou no aviso no topo do editor). Rejeitar deixa-o como rascunho.
+  Conteúdo já público não pode ser alterado nem apagado pela API (erro 409).
 - A página **API / IA** tem instruções prontas a colar no ChatGPT (GPT com ações) e no Claude.
 
 ```bash

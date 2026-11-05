@@ -14,14 +14,20 @@ Endpoints
 - GET  /posts?q=&limit=&offset=   listar artigos (sem conteúdo)
 - POST /posts                     criar artigo
 - GET  /posts/{id}                ler artigo com o conteúdo HTML
-- PATCH /posts/{id}               alterar artigo (só os campos enviados mudam)
-- DELETE /posts/{id}              apagar artigo (definitivo)
+- PATCH /posts/{id}               alterar artigo ainda não público (só os campos enviados mudam)
+- DELETE /posts/{id}              apagar artigo ainda não público (definitivo)
 - O mesmo para /pages e /pages/{id}
 - GET  /media, POST /media        listar / enviar imagem: {"filename": "foto.jpg", "data": "<base64>", "alt": "..."}
 
 Campos de um artigo: title, slug (opcional), excerpt, content, meta_description, cover_image, tags (lista),
-published (true/false), noindex, published_at (ISO 8601; data futura = agendado).
-Campos de uma página: title, slug, content, meta_description, cover_image, published, noindex, in_menu, menu_order.
+noindex, published_at (ISO 8601; data futura = agendado depois de aprovado).
+Campos de uma página: title, slug, content, meta_description, cover_image, noindex, in_menu, menu_order.
+
+Aprovação
+- Tu não publicas: tudo o que crias ou alteras fica com "status": "pending_review", invisível no site,
+  até eu aprovar no backoffice. Depois de aprovado, o status passa a "published"; se eu rejeitar, a "rejected".
+- Conteúdo já público não pode ser alterado nem apagado pela API (erro 409). Para propor mudanças a algo
+  publicado, cria um conteúdo novo e explica-me o que mudou.
 
 Regras
 - "content" é HTML simples: <p>, <h2>, <h3>, <ul>/<ol>/<li>, <a>, <strong>, <em>, <blockquote>, <pre><code>,
@@ -29,17 +35,16 @@ Regras
   Um link do YouTube sozinho num parágrafo vira vídeo incorporado.
 - Escreve no idioma do site (ver GET /site) e reutiliza as etiquetas existentes quando fizer sentido.
 - Preenche sempre excerpt e meta_description (até ~155 caracteres) para o SEO.
-- Cria sempre como rascunho ("published": false), mostra-me o resultado e só publica
-  (PATCH com "published": true) depois de eu confirmar.
 - Nunca apagues nada sem eu pedir explicitamente.
-- No fim, devolve-me o "url" e o "admin_url" da resposta.
+- No fim, diz-me que ficou à espera da minha aprovação e devolve-me o "admin_url" da resposta.
 TXT;
 $curl = "curl -X POST {$apiBase}/posts \\\n  -H \"Authorization: Bearer {$key}\" \\\n  -H \"Content-Type: application/json\" \\\n"
     . "  -d '{\"title\": \"Olá mundo\", \"excerpt\": \"Primeiro artigo pela API\", \"content\": \"<p>Escrito por IA.</p>\", \"tags\": [\"IA\"]}'";
 ?>
 <h1>API / IA</h1>
 <p class="muted">Permite que o ChatGPT, o Claude ou qualquer script criem e editem artigos e páginas. Tudo o que chega pela API
-    passa pelos mesmos filtros do editor e, por omissão, fica em <strong>rascunho</strong>.</p>
+    passa pelos mesmos filtros do editor e fica <strong>invisível até o aprovar</strong> em
+    <a href="/admin/review">Para aprovar</a>. A API não consegue publicar nem alterar o que já está público.</p>
 
 <?php if ($newToken): ?>
     <div class="card api-new-key">

@@ -155,3 +155,12 @@ table.card { padding: 0; overflow: hidden; display: table; }
 .api-tokens form { margin: 0; }
 .api-instructions { width: 100%; font-family: ui-monospace, monospace; font-size: 0.8rem; }
 .settings-grid + .card { margin-top: 16px; }
+.badge.review { background: #ede9fe; color: #5b21b6; text-decoration: none; }
+.side nav .count { display: inline-block; min-width: 18px; padding: 0 6px; border-radius: 99px; background: #7c3aed; color: #fff; font-size: 0.72rem; text-align: center; }
+.review-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.review-banner.pending { border-color: #a78bfa; background: #f5f3ff; }
+.review-banner.rejected { border-color: #fca5a5; }
+.review-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.review-actions form { margin: 0; }
+.small { font-size: 0.82rem; }
+@media (prefers-color-scheme: dark) { .review-banner.pending { background: transparent; } }

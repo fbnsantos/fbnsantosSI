@@ -1,0 +1,45 @@
+TREINO POR INTERVALOS — Configurações locais
+
+INSTALAÇÃO / ATUALIZAÇÃO
+1. Extrai o ZIP e coloca o conteúdo da pasta treino_timer na pasta da aplicação no teu servidor.
+2. Mantém o mesmo endereço e substitui todos os ficheiros antigos, incluindo sw.js.
+3. Abre https://teusite.pt/treino_timer/ com ligação à Internet. Numa atualização, fecha e volta a abrir a aplicação após o primeiro carregamento para usar todos os ficheiros novos.
+4. Aguarda a indicação de que a aplicação está preparada para utilização offline.
+5. No telemóvel, usa a opção do navegador «Instalar aplicação» ou «Adicionar ao ecrã principal» (no iPhone, no menu Partilhar do Safari).
+
+Não basta abrir index.html diretamente: a instalação e o modo offline requerem HTTPS. Para testes locais também podes usar localhost.
+
+CONFIGURAÇÕES
+- O treino inicial tem 10 exercícios, 70 segundos por exercício e 10 segundos de descanso.
+- Escolhe «Nova configuração», dá-lhe um nome, define os valores e carrega em «Guardar configuração».
+- Para editar, seleciona um treino, altera os campos e guarda novamente.
+- Para apagar, seleciona o treino e escolhe «Eliminar», confirmando a eliminação.
+- Podes guardar vários treinos com nomes distintos. A última seleção é recuperada ao reabrir.
+- As alterações só ficam guardadas quando carregas em «Guardar configuração». Podes iniciar um treino com alterações por guardar.
+- A duração de exercício é a mesma para todos os exercícios dessa configuração. Descanso 0 elimina as pausas. Não há descanso após o último exercício.
+- Limites: 1–1000 exercícios; 1–86400 segundos por exercício; 0–86400 segundos de descanso.
+
+DADOS LOCAIS
+Os treinos são guardados em localStorage, neste navegador e endereço do site. Não são enviados para um servidor nem sincronizados entre dispositivos. Limpar dados do site, usar navegação privada ou mudar de endereço/navegador pode fazer perder o acesso às configurações. Se o navegador recusar a gravação, aparece uma mensagem; não é apresentada uma falsa confirmação de sucesso.
+
+TEMPORIZADOR E VOZ
+Iniciar, Pausar/Retomar e Reiniciar controlam o treino. Reiniciar não apaga configurações. A edição fica bloqueada durante o treino e a pausa; usa Reiniciar para voltar a editar.
+Os avisos usam as vozes de português disponíveis no sistema (preferência pt-PT). Anunciam a fase e a duração real, depois 60, 50, 40, 30, 20, 10 e 3, 2, 1 segundos, quando aplicável.
+Mantém a aplicação aberta e o ecrã desbloqueado: o sistema pode suspender a voz e a execução em segundo plano. Ao regressar à página, o temporizador acompanha o tempo decorrido, sem reproduzir todos os avisos perdidos. As vozes offline dependem das vozes instaladas no dispositivo.
+
+VERSÃO 2.1 — VOZ NO TELEMÓVEL
+Depois de atualizar todos os ficheiros, abre a página com Internet, fecha e volta a abrir. Confirma que aparece «Versão 2.1» no rodapé. Mantém o mesmo endereço para conservar os treinos; não limpes os dados do site.
+Antes de treinar, toca em «Testar voz». Escolhe outra voz de português, se houver mais do que uma. Aumenta o volume multimédia e verifica se o som está a sair por Bluetooth.
+Se o teste falhar no Android, procura «Conversão de texto em voz» nas definições do telemóvel, confirma que existe um motor ativo e instala uma voz de português. Os nomes dos menus variam conforme o dispositivo. A aplicação apresenta o erro comunicado pelo navegador.
+Esta atualização trata o carregamento tardio das vozes, retoma a síntese suspensa e evita cancelar cada aviso antes de o reproduzir. Não substitui o motor de voz do Android.
+
+VERSÃO 2.2 — SINAIS SONOROS INDEPENDENTES
+Inclui sinais gerados por Web Audio, sem depender da síntese de voz. Toca em «Ativar e testar sinais sonoros» antes do treino. Ouvirás dois sinais. As mudanças de fase têm dois sinais, a conclusão tem três, e os momentos de contagem têm um sinal. A opção de voz continua disponível separadamente. Esta versão NÃO inclui voz gravada.
+Se não ouvires os sinais, abre «Teste de áudio direto» e carrega no leitor. Confirma o volume multimédia, a saída Bluetooth e se o som do site está permitido no Chrome.
+Publica todos os ficheiros, incluindo a pasta audio e sw.js. Fecha e reabre até aparecer «Versão 2.2». Não limpes os dados do site.
+
+VERSÃO 2.2.1 — MANTER ECRÃ LIGADO
+A opção «Manter ecrã ligado durante o treino» está ativada inicialmente e a escolha fica guardada neste navegador. O pedido é feito ao iniciar ou retomar e mantém-se durante os exercícios e descansos. É libertado ao pausar, reiniciar, terminar ou desmarcar a opção.
+Ao mudar de aplicação o pedido deixa de se aplicar. Quando regressas, é pedido novamente se o treino ainda estiver a decorrer. A mensagem junto à opção indica se o ecrã está a ser mantido ligado.
+Requer HTTPS e suporte do navegador. O sistema pode recusar ou cancelar o pedido, por exemplo em poupança de bateria. Não impede o bloqueio manual do telemóvel nem garante áudio com o ecrã bloqueado. Não corrige o erro de síntese de voz do Android.
+Para atualizar, substitui todos os ficheiros na mesma pasta do servidor, incluindo sw.js e audio. Fecha e reabre a aplicação até veres «Versão 2.2.1». Não limpes os dados do site, para preservar os treinos.

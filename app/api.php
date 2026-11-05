@@ -14,14 +14,16 @@
  * Autenticação: "Authorization: Bearer <chave>" (ou "X-API-Key: <chave>").
  * As chaves criam-se no backoffice em "API / IA"; guarda-se só o hash SHA-256.
  * Os dados passam pelas mesmas validações e pelo mesmo filtro de HTML do backoffice.
+ * Nada fica público pela API: o que é criado ou alterado fica "pendente de aprovação" (review_status = pending)
+ * e só é publicado quando aprovado no backoffice (/admin/review). Conteúdo já público não pode ser alterado pela API.
  */
 declare(strict_types=1);
 
 require_once ROOT . '/app/admin.php';
 
 const API_FIELDS = [
-    'pages' => ['title', 'slug', 'meta_description', 'content', 'cover_image', 'published', 'noindex', 'in_menu', 'menu_order'],
-    'posts' => ['title', 'slug', 'meta_description', 'excerpt', 'content', 'cover_image', 'tags', 'published', 'noindex', 'published_at'],
+    'pages' => ['title', 'slug', 'meta_description', 'content', 'cover_image', 'noindex', 'in_menu', 'menu_order'],
+    'posts' => ['title', 'slug', 'meta_description', 'excerpt', 'content', 'cover_image', 'tags', 'noindex', 'published_at'],
 ];
 
 function route_api(string $sub, string $method): void
@@ -40,7 +42,7 @@ function route_api(string $sub, string $method): void
             api_send(api_openapi());
         }
 
-        api_auth();
+        $token = api_auth();
 
         if ($sub === '/site' && $method === 'GET') {
             api_send(api_site());
@@ -48,7 +50,7 @@ function route_api(string $sub, string $method): void
         if (preg_match('#^/(pages|posts)$#', $sub, $m)) {
             match ($method) {
                 'GET' => api_list($m[1]),
-                'POST' => api_save($m[1], null),
+                'POST' => api_save($m[1], null, $token),
                 default => api_error(405, 'Método não permitido.'),
             };
         }
@@ -56,7 +58,7 @@ function route_api(string $sub, string $method): void
             $id = (int) $m[2];
             match ($method) {
                 'GET' => api_send(api_out($m[1], api_find_or_404($m[1], $id), true)),
-                'PATCH', 'PUT', 'POST' => api_save($m[1], $id),
+                'PATCH', 'PUT', 'POST' => api_save($m[1], $id, $token),
                 'DELETE' => api_delete($m[1], $id),
                 default => api_error(405, 'Método não permitido.'),
             };
@@ -168,6 +170,12 @@ function api_find_or_404(string $type, int $id): array
 
 function api_status(string $type, array $row): string
 {
+    if (!$row['published'] && $row['review_status'] === 'pending') {
+        return 'pending_review';
+    }
+    if (!$row['published'] && $row['review_status'] === 'rejected') {
+        return 'rejected';
+    }
     if (!$row['published']) {
         return 'draft';
     }
@@ -232,7 +240,6 @@ function api_value(string $field, mixed $v): mixed
 {
     $bad = fn(string $why) => api_error(422, "Campo \"$field\" inválido: $why");
     switch ($field) {
-        case 'published':
         case 'noindex':
         case 'in_menu':
             $b = filter_var($v, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
@@ -252,19 +259,31 @@ function api_value(string $field, mixed $v): mixed
     }
 }
 
-function api_save(string $type, ?int $id): never
+/** O que já está público só se altera no backoffice (a API nunca muda o que os visitantes veem). */
+function api_require_not_public(string $type, array $row): void
+{
+    if ($row['published']) {
+        api_error(409, 'Este conteúdo já está público e só pode ser alterado ou apagado no backoffice: '
+            . abs_url("/admin/$type/{$row['id']}") . '. Para propor uma versão nova, crie um conteúdo novo.');
+    }
+}
+
+function api_save(string $type, ?int $id, array $token): never
 {
     $in = api_body();
     $fields = array_flip(API_FIELDS[$type]);
     if ($id) {
         $existing = api_find_or_404($type, $id);
+        api_require_not_public($type, $existing);
         $item = array_intersect_key($existing, $fields);
     } else {
         $existing = null;
-        // Por omissão, o que chega pela API fica em rascunho até ser pedido "published": true.
         $item = array_intersect_key(empty_item($type), $fields);
-        $item['published'] = 0;
     }
+    // Tudo o que chega pela API fica invisível e pendente de aprovação no backoffice.
+    $item['published'] = 0;
+    $item['review_status'] = 'pending';
+    $item['source'] = 'API: ' . $token['name'];
     foreach (API_FIELDS[$type] as $k) {
         if (array_key_exists($k, $in)) {
             $item[$k] = api_value($k, $in[$k]);
@@ -283,7 +302,9 @@ function api_save(string $type, ?int $id): never
     }
     $newId = content_store($type, $item, $id);
     $out = api_out($type, api_find($type, $newId), true);
-    $ignored = array_values(array_diff(array_keys($in), API_FIELDS[$type], ['id', 'type', 'csrf']));
+    $out['message'] = 'Guardado e pendente de aprovação. Só fica público depois de aprovado no backoffice: '
+        . abs_url('/admin/review');
+    $ignored = array_values(array_diff(array_keys($in), API_FIELDS[$type], ['id', 'type', 'csrf', 'status']));
     if ($ignored) {
         $out['ignored_fields'] = $ignored;
     }
@@ -293,6 +314,7 @@ function api_save(string $type, ?int $id): never
 function api_delete(string $type, int $id): never
 {
     $row = api_find_or_404($type, $id);
+    api_require_not_public($type, $row);
     if ($type === 'pages' && $row['slug'] === 'home') {
         api_error(422, 'A página inicial não pode ser apagada.');
     }
@@ -413,7 +435,7 @@ function api_openapi(): array
                         'items' => ['type' => 'array', 'items' => $ref($Name)],
                         'total' => ['type' => 'integer'], 'limit' => ['type' => 'integer'], 'offset' => ['type' => 'integer'],
                     ]])], '401' => $err]],
-                'post' => ['operationId' => "create$Name", 'summary' => "Criar $one (fica em rascunho, a não ser que published seja true)",
+                'post' => ['operationId' => "create$Name", 'summary' => "Criar $one. Fica pendente de aprovação do autor; não é publicado pela API",
                     'requestBody' => ['required' => true, ...$json($ref("{$Name}Input"))],
                     'responses' => ['201' => ['description' => 'Criado', ...$json($ref($Name))], '422' => $err, '401' => $err]],
             ],
@@ -421,10 +443,10 @@ function api_openapi(): array
                 'parameters' => [$idParam],
                 'get' => ['operationId' => "get$Name", 'summary' => "Ler $one com o conteúdo HTML",
                     'responses' => ['200' => ['description' => 'OK', ...$json($ref($Name))], '404' => $err]],
-                'patch' => ['operationId' => "update$Name", 'summary' => "Alterar $one: só os campos enviados mudam",
+                'patch' => ['operationId' => "update$Name", 'summary' => "Alterar $one ainda não público (só os campos enviados mudam); volta a ficar pendente de aprovação",
                     'requestBody' => ['required' => true, ...$json($ref("{$Name}Input"))],
                     'responses' => ['200' => ['description' => 'Atualizado', ...$json($ref($Name))], '422' => $err, '404' => $err]],
-                'delete' => ['operationId' => "delete$Name", 'summary' => "Apagar $one (definitivo)",
+                'delete' => ['operationId' => "delete$Name", 'summary' => "Apagar $one ainda não público (definitivo)",
                     'responses' => ['200' => ['description' => 'Apagado', ...$json(['type' => 'object', 'properties' => [
                         'deleted' => ['type' => 'boolean'], 'id' => ['type' => 'integer'],
                     ]])], '404' => $err]],
@@ -438,7 +460,6 @@ function api_openapi(): array
         'meta_description' => ['type' => 'string', 'description' => 'Descrição para o Google (até ~155 caracteres)'],
         'content' => ['type' => 'string', 'description' => 'Corpo em HTML: p, h2, h3, h4, ul, ol, li, a, strong, em, blockquote, pre, code, img, figure, figcaption, table. Um link do YouTube sozinho num <p> vira vídeo. Sem scripts, estilos ou iframes.'],
         'cover_image' => ['type' => 'string', 'description' => 'Imagem de capa: URL https:// ou caminho devolvido por uploadMedia'],
-        'published' => ['type' => 'boolean', 'description' => 'true = público. Por omissão os novos ficam em rascunho (false).'],
         'noindex' => ['type' => 'boolean', 'description' => 'true = esconder do Google'],
     ];
     $postInput = $common + [
@@ -453,7 +474,10 @@ function api_openapi(): array
     $meta = [
         'id' => ['type' => 'integer'],
         'type' => ['type' => 'string'],
-        'status' => ['type' => 'string', 'enum' => ['draft', 'scheduled', 'published']],
+        'status' => ['type' => 'string', 'enum' => ['pending_review', 'rejected', 'draft', 'scheduled', 'published'],
+            'description' => 'pending_review = à espera de aprovação; rejected = não aprovado; published = público'],
+        'published' => ['type' => 'boolean', 'description' => 'Público? Só muda quando o autor aprova no backoffice'],
+        'message' => ['type' => 'string'],
         'url' => ['type' => 'string', 'description' => 'Endereço público (rascunhos só são visíveis com sessão no backoffice)'],
         'admin_url' => ['type' => 'string', 'description' => 'Editar no backoffice'],
         'created_at' => ['type' => 'string'],

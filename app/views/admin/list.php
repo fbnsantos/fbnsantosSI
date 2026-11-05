@@ -23,7 +23,9 @@
                 <td><a href="/admin/<?= $type ?>/<?= $it['id'] ?>"><strong><?= e($it['title']) ?></strong></a></td>
                 <td><a class="muted" href="<?= e($url) ?>" target="_blank"><?= e($url) ?></a></td>
                 <td>
-                    <?php if (!$it['published']): ?><span class="badge draft">Rascunho</span>
+                    <?php if (!$it['published'] && $it['review_status'] === 'pending'): ?><a class="badge review" href="/admin/review">Para aprovar</a>
+                    <?php elseif (!$it['published'] && $it['review_status'] === 'rejected'): ?><span class="badge draft">Rejeitado</span>
+                    <?php elseif (!$it['published']): ?><span class="badge draft">Rascunho</span>
                     <?php elseif ($scheduled): ?><span class="badge sched">Agendado</span>
                     <?php else: ?><span class="badge pub">Publicado</span><?php endif; ?>
                     <?php if ($it['noindex']): ?><span class="badge">noindex</span><?php endif; ?>
