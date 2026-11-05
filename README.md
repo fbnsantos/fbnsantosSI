@@ -151,6 +151,20 @@ O conteúdo inicial (textos, perfis e foto do fbnsantos.com) está em `app/seed.
   É incorporado em modo de privacidade (`youtube-nocookie.com`).
 - O HTML é filtrado ao guardar (sem scripts nem iframes que não sejam do YouTube).
 
+## API (ChatGPT, Claude, scripts)
+
+API REST em `/api` para criar e editar artigos, páginas e imagens. Especificação OpenAPI 3.1 em `/api/openapi.json`.
+
+- Chaves criadas e revogadas no backoffice em **API / IA**. A chave só é mostrada uma vez; guarda-se apenas o hash.
+- Autenticação: `Authorization: Bearer <chave>` (ou `X-API-Key: <chave>`). Falhas repetidas bloqueiam o IP durante 15 minutos.
+- O conteúdo passa pelas mesmas validações e pelo mesmo filtro de HTML do editor. O que é criado pela API fica em
+  rascunho, a não ser que se envie `"published": true`.
+- A página **API / IA** tem instruções prontas a colar no ChatGPT (GPT com ações) e no Claude.
+
+```bash
+curl -H "Authorization: Bearer <chave>" https://fbnsantos.com/api/posts
+```
+
 ## Cópias de segurança
 
 Basta copiar `data/site.sqlite` e `uploads/`.

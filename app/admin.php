@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-const RESERVED_SLUGS = ['admin', 'blog', 'home', 'feed', 'sitemap', 'robots', 'assets', 'uploads', 'favicon'];
+const RESERVED_SLUGS = ['admin', 'api', 'blog', 'home', 'feed', 'sitemap', 'robots', 'assets', 'uploads', 'favicon'];
 const LOGIN_MAX_ATTEMPTS = 5;
 const LOGIN_WINDOW = 900; // 15 minutos
 
@@ -66,6 +66,18 @@ function route_admin(string $sub, string $method): void
         admin_password($method);
     } elseif ($sub === '/update') {
         admin_update($method);
+    } elseif ($sub === '/api') {
+        admin_api();
+    } elseif ($sub === '/api/tokens' && $method === 'POST') {
+        require_once ROOT . '/app/api.php';
+        $name = trim((string) ($_POST['name'] ?? '')) ?: 'Sem nome';
+        session_boot();
+        $_SESSION['new_api_token'] = api_create_token(mb_substr($name, 0, 80));
+        redirect('/admin/api');
+    } elseif (preg_match('#^/api/tokens/(\d+)/delete$#', $sub, $m) && $method === 'POST') {
+        db()->prepare('DELETE FROM api_tokens WHERE id = ?')->execute([(int) $m[1]]);
+        flash('Chave revogada: deixou de funcionar.');
+        redirect('/admin/api');
     } else {
         http_response_code(404);
         admin_render('message', ['title' => 'Não encontrado', 'message' => 'Esta página do backoffice não existe.']);
@@ -75,6 +87,23 @@ function route_admin(string $sub, string $method): void
 function admin_render(string $view, array $vars = []): void
 {
     render("admin/$view", $vars, 'admin/layout');
+}
+
+/* ---------- API para ChatGPT, Claude e outras ferramentas ---------- */
+
+function admin_api(): void
+{
+    session_boot();
+    // A chave nova só é mostrada uma vez, logo a seguir a ser criada.
+    $newToken = $_SESSION['new_api_token'] ?? null;
+    unset($_SESSION['new_api_token']);
+    admin_render('api', [
+        'title' => 'API / IA',
+        'tokens' => db()->query('SELECT * FROM api_tokens ORDER BY id DESC')->fetchAll(),
+        'newToken' => $newToken,
+        'apiBase' => abs_url('/api'),
+        'openapiUrl' => abs_url('/api/openapi.json'),
+    ]);
 }
 
 /* ---------- Atualizar o site a partir do GitHub (mesmo código do git.php) ---------- */
@@ -311,6 +340,29 @@ function admin_save(string $type, ?int $id): void
         $item['published_at'] = $ts ? date('Y-m-d H:i:s', $ts) : now();
     }
 
+    $errors = content_errors($type, $item, $id);
+
+    if (!$errors && !empty($_FILES['cover_file']['name'])) {
+        try {
+            $item['cover_image'] = handle_upload($_FILES['cover_file'], $item['title'])['url'];
+        } catch (RuntimeException $ex) {
+            $errors[] = 'Capa: ' . $ex->getMessage();
+        }
+    }
+
+    if ($errors) {
+        admin_edit($type, $id, ['id' => $id] + $item + empty_item($type), $errors);
+        return;
+    }
+
+    $id = content_store($type, $item, $id);
+    flash('Guardado.');
+    redirect("/admin/$type/$id");
+}
+
+/** Validação comum ao backoffice e à API. Devolve a lista de erros (vazia se estiver tudo bem). */
+function content_errors(string $type, array $item, ?int $id): array
+{
     $errors = [];
     if ($item['title'] === '') {
         $errors[] = 'O título é obrigatório.';
@@ -330,20 +382,12 @@ function admin_save(string $type, ?int $id): void
     if ($item['cover_image'] !== '' && !safe_url($item['cover_image'], false)) {
         $errors[] = 'A imagem de capa deve ser um URL (https://…) ou um caminho começado por /.';
     }
+    return $errors;
+}
 
-    if (!$errors && !empty($_FILES['cover_file']['name'])) {
-        try {
-            $item['cover_image'] = handle_upload($_FILES['cover_file'], $item['title'])['url'];
-        } catch (RuntimeException $ex) {
-            $errors[] = 'Capa: ' . $ex->getMessage();
-        }
-    }
-
-    if ($errors) {
-        admin_edit($type, $id, ['id' => $id] + $item + empty_item($type), $errors);
-        return;
-    }
-
+/** Grava (cria ou atualiza) e avisa o IndexNow se ficar público. Devolve o id. */
+function content_store(string $type, array $item, ?int $id): int
+{
     $item['updated_at'] = now();
     if ($id) {
         $sets = implode(', ', array_map(fn($k) => "$k = :$k", array_keys($item)));
@@ -357,8 +401,7 @@ function admin_save(string $type, ?int $id): void
     if ($item['published'] && !$item['noindex']) {
         indexnow_ping([public_url($type, $item)]);
     }
-    flash('Guardado.');
-    redirect("/admin/$type/$id");
+    return $id;
 }
 
 function public_url(string $type, array $item): string

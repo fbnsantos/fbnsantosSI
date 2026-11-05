@@ -146,3 +146,12 @@ table.card { padding: 0; overflow: hidden; display: table; }
 .media-item .row { display: flex; gap: 6px; align-items: center; }
 .media-item .row input { margin: 0; padding: 4px 8px; font-size: 0.8rem; }
 .deploy-log { white-space: pre-wrap; font-size: 0.8rem; max-height: 360px; overflow: auto; }
+.api-new-key { border-color: var(--accent); }
+.api-key { font-size: 0.95rem; word-break: break-all; }
+.api-token-form { display: flex; gap: 8px; margin-bottom: 14px; max-width: 520px; }
+.api-token-form input { flex: 1; }
+.api-tokens { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.api-tokens th, .api-tokens td { text-align: left; padding: 6px 8px; border-top: 1px solid var(--line); }
+.api-tokens form { margin: 0; }
+.api-instructions { width: 100%; font-family: ui-monospace, monospace; font-size: 0.8rem; }
+.settings-grid + .card { margin-top: 16px; }

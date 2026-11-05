@@ -220,7 +220,7 @@ function robots_txt(): string
     if (!indexing_allowed()) {
         return "# Indexação desativada no backoffice (Definições → Permitir indexação)\nUser-agent: *\nDisallow: /\n";
     }
-    return "User-agent: *\nAllow: /\nDisallow: /admin\n\nSitemap: " . abs_url('/sitemap.xml') . "\n";
+    return "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api\n\nSitemap: " . abs_url('/sitemap.xml') . "\n";
 }
 
 function xml(string $s): string

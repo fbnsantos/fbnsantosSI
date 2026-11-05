@@ -30,11 +30,15 @@ if (config('canonical_redirect', true) && PHP_SAPI !== 'cli-server' && !empty($c
 // URLs canónicos em minúsculas e sem barra final.
 // (o ltrim impede redirecionamentos abertos do tipo //outro-site ou /\outro-site)
 $clean = '/' . ltrim(rtrim(strtolower($path), '/'), '/\\');
-if ($clean !== $path && !str_starts_with($path, '/admin')) {
+$isApi = $path === '/api' || str_starts_with($path, '/api/');
+if ($clean !== $path && !str_starts_with($path, '/admin') && !$isApi) {
     redirect($clean . $qs, 301);
 }
 
-if ($path === '/admin' || str_starts_with($path, '/admin/')) {
+if ($isApi) {
+    require ROOT . '/app/api.php';
+    route_api(substr($path, 4) ?: '/', $_SERVER['REQUEST_METHOD'] ?? 'GET');
+} elseif ($path === '/admin' || str_starts_with($path, '/admin/')) {
     require ROOT . '/app/admin.php';
     route_admin(substr($path, 6) ?: '/', $_SERVER['REQUEST_METHOD'] ?? 'GET');
 } else {

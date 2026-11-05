@@ -10,6 +10,10 @@ DirectoryIndex index.php
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # Passar o cabeçalho Authorization ao PHP (API: "Bearer <chave>"); alguns alojamentos removem-no.
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
     # Nunca servir ficheiros escondidos (.git, .env, …)
     RewriteRule (^|/)\.(?!well-known/) - [F,L]
 

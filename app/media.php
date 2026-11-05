@@ -16,7 +16,7 @@ const MAX_IMAGE_WIDTH = 2000;
  * Guarda um ficheiro enviado em uploads/AAAA/MM e regista-o na tabela media.
  * Imagens muito grandes são reduzidas (se a extensão GD estiver disponível).
  */
-function handle_upload(array $file, string $alt = ''): array
+function handle_upload(array $file, string $alt = '', bool $fromHttpUpload = true): array
 {
     if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
         throw new RuntimeException(match ($file['error'] ?? null) {
@@ -43,7 +43,9 @@ function handle_upload(array $file, string $alt = ''): array
     $name = $base . '-' . bin2hex(random_bytes(3)) . '.' . UPLOAD_MIMES[$mime];
     $target = "$abs/$name";
 
-    if (!move_uploaded_file($file['tmp_name'], $target)) {
+    // $fromHttpUpload = false: ficheiro temporário criado pelo próprio servidor (ex.: base64 recebido pela API).
+    $moved = $fromHttpUpload ? move_uploaded_file($file['tmp_name'], $target) : rename($file['tmp_name'], $target);
+    if (!$moved) {
         throw new RuntimeException('Não foi possível guardar o ficheiro.');
     }
     chmod($target, 0644);
