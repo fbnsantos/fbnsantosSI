@@ -27,6 +27,9 @@ DirectoryIndex index.html index.php
     # RewriteCond %{HTTP_HOST} ^www\. [NC]
     # RewriteRule ^ https://fbnsantos.com%{REQUEST_URI} [L,R=301]
 
+    # Ficheiros SEO são sempre gerados pelo site, mesmo que exista um ficheiro antigo com o mesmo nome no servidor.
+    RewriteRule ^(sitemap\.xml|robots\.txt|feed\.xml|llms\.txt)$ index.php [QSA,L]
+
     # Pastas com app estática própria (ex.: /treino/ com index.html) são servidas tal como estão.
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteCond %{REQUEST_FILENAME}/index.html -f
