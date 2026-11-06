@@ -140,7 +140,25 @@ $list = function (string $title, array $rows, ?callable $label = null, string $e
         'Nenhum erro 404 neste período.');
     ?>
 </div>
-<?php if ($r['countries'] && count($r['countries']) === 1 && $r['countries'][0]['label'] === '?'): ?>
-    <p class="muted small">O país só é conhecido se o site estiver atrás da Cloudflare (ou se o alojamento tiver GeoIP).
-        Até lá, o idioma do navegador é uma boa aproximação da origem geográfica.</p>
-<?php endif; ?>
+
+<section class="card">
+    <h2>País dos visitantes</h2>
+    <?php if ($geoip): ?>
+        <p>O país é obtido a partir do IP numa base guardada no próprio servidor (DB-IP de <?= e($geoip['month']) ?>,
+            <?= $n((int) $geoip['ranges']) ?> intervalos, atualizada em <?= e(format_date(date('Y-m-d', (int) $geoip['updated']))) ?>).
+            O IP não é enviado a ninguém nem guardado.</p>
+        <?php if ((int) $geoip['updated'] < strtotime('-40 days')): ?>
+            <p class="muted">A base tem mais de um mês: atualize para manter os países certos.</p>
+        <?php endif; ?>
+    <?php else: ?>
+        <p>Para saber o país de cada visita, descarregue a base de países (cerca de 5 MB, uma vez por mês).
+            Fica guardada no servidor: o IP dos visitantes não é enviado a ninguém nem guardado.
+            As visitas já registadas ficam como “Desconhecido”.</p>
+    <?php endif; ?>
+    <form method="post" action="/admin/stats/geoip">
+        <?= csrf_field() ?>
+        <button class="btn small<?= $geoip ? '' : ' primary' ?>"><?= $geoip ? 'Atualizar base de países' : 'Descarregar base de países' ?></button>
+        <span class="muted small">Pode demorar até um minuto.</span>
+    </form>
+    <p class="muted small"><a href="https://db-ip.com" target="_blank" rel="noopener">IP Geolocation by DB-IP</a> (CC BY 4.0)</p>
+</section>

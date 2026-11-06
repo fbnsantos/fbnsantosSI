@@ -18,6 +18,7 @@ require __DIR__ . '/sanitize.php';
 require __DIR__ . '/media.php';
 require __DIR__ . '/seo.php';
 require __DIR__ . '/ogimage.php';
+require __DIR__ . '/geoip.php';
 require __DIR__ . '/stats.php';
 
 header('X-Content-Type-Options: nosniff');

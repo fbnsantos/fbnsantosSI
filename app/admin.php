@@ -69,7 +69,14 @@ function route_admin(string $sub, string $method): void
     } elseif ($sub === '/stats') {
         $days = (int) ($_GET['dias'] ?? 30);
         $days = in_array($days, [7, 30, 90, 365], true) ? $days : 30;
-        admin_render('stats', ['title' => 'Estatísticas', 'r' => stats_report($days)]);
+        admin_render('stats', ['title' => 'Estatísticas', 'r' => stats_report($days), 'geoip' => geoip_info()]);
+    } elseif ($sub === '/stats/geoip' && $method === 'POST') {
+        $error = geoip_update();
+        $info = geoip_info();
+        $error === null
+            ? flash('Base de países atualizada (DB-IP ' . ($info['month'] ?? '') . '). As próximas visitas já mostram o país.')
+            : flash($error, 'error');
+        redirect('/admin/stats');
     } elseif ($sub === '/review') {
         admin_review();
     } elseif (preg_match('#^/review/(pages|posts)/(\d+)/(approve|reject)$#', $sub, $m) && $method === 'POST') {

@@ -179,7 +179,10 @@ As listas de páginas e artigos mostram o total de visualizações de cada um.
   mas não permite seguir ninguém entre dias.
 - Da origem guarda-se só o domínio. Links com `?utm_source=` (o ChatGPT acrescenta `utm_source=chatgpt.com`) também contam.
 - Robôs e as visitas com sessão no backoffice não contam como visitas. Os dados com mais de 13 meses são apagados.
-- O país só é conhecido atrás da Cloudflare (`CF-IPCountry`) ou com GeoIP no alojamento; senão usa-se o idioma do navegador.
+- País: obtido do IP no momento do pedido, numa base local (`app/geoip.php`, base gratuita
+  [DB-IP Lite](https://db-ip.com), CC BY 4.0). Descarrega-se e atualiza-se (uma vez por mês) com o botão
+  *Descarregar base de países* em **Estatísticas**; fica em `data/geoip4.bin` e `data/geoip6.bin` (~9 MB).
+  O IP não é enviado a nenhum serviço nem guardado. Atrás da Cloudflare usa-se `CF-IPCountry`.
 - Não conta ficheiros estáticos servidos diretamente pelo Apache (ex.: a app em `/treino/`).
 
 ## Cópias de segurança

@@ -177,9 +177,13 @@ function stats_known_source(string $hostOrName): ?array
 
 function stats_country(): string
 {
-    // Disponível se o site estiver atrás da Cloudflare ou se o alojamento tiver GeoIP.
-    $c = (string) ($_SERVER['HTTP_CF_IPCOUNTRY'] ?? $_SERVER['GEOIP_COUNTRY_CODE'] ?? $_SERVER['HTTP_X_COUNTRY_CODE'] ?? '');
-    return preg_match('/^[A-Z]{2}$/', strtoupper($c)) && !in_array(strtoupper($c), ['XX', 'T1'], true) ? strtoupper($c) : '';
+    // 1) Cloudflare ou GeoIP do alojamento, se existirem; 2) base local DB-IP (app/geoip.php).
+    // O IP só é usado aqui, no momento do pedido; nunca é guardado.
+    $c = strtoupper((string) ($_SERVER['HTTP_CF_IPCOUNTRY'] ?? $_SERVER['GEOIP_COUNTRY_CODE'] ?? ''));
+    if (preg_match('/^[A-Z]{2}$/', $c) && !in_array($c, ['XX', 'T1', 'ZZ'], true)) {
+        return $c;
+    }
+    return geoip_country(client_ip());
 }
 
 function stats_language(): string
