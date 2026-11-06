@@ -167,6 +167,26 @@ API REST em `/api` para criar e editar artigos, páginas e imagens. Especificaç
 curl -H "Authorization: Bearer <chave>" https://fbnsantos.com/api/posts
 ```
 
+## Redes sociais e Destaques
+
+**Do site para o LinkedIn** (`app/linkedin.php`): no fundo do editor de cada artigo ou página publicada há o cartão
+*Partilhar no LinkedIn*, com o texto sugerido (título, resumo, hashtags das etiquetas).
+- *Publicar no LinkedIn*: publica no perfil pessoal pela API oficial, com cartão de link e a imagem de capa.
+  Configuração única em **Redes sociais**: criar uma app em linkedin.com/developers com os produtos
+  *Share on LinkedIn* e *Sign In with LinkedIn using OpenID Connect*, juntar o URL de redirecionamento
+  `https://fbnsantos.com/admin/linkedin/callback` e colar o Client ID e o Client Secret (fica cifrado).
+  O LinkedIn dá autorizações de 60 dias; depois clica-se outra vez em *Ligar ao LinkedIn*.
+- *Abrir no LinkedIn*: sem configurar nada, abre o LinkedIn com o texto e o link já escritos.
+- Os artigos têm também links de partilha (LinkedIn, X, Facebook, email) para os visitantes, sem scripts externos.
+
+**Das redes para o site** (`app/social.php`): página `/highlights` (e os 3 mais recentes na página inicial) com
+vídeos do YouTube, publicações do LinkedIn e do Instagram e outros links. Geridos em **Destaques**.
+- Cola-se o link; o título, texto e imagem são lidos da página (YouTube: oEmbed oficial). Se a rede não deixar,
+  escrevem-se à mão e envia-se uma imagem. As imagens são copiadas para `uploads/`: o site não carrega nada das redes
+  (exceto os vídeos ★ destacados, em modo `youtube-nocookie`).
+- YouTube: indicando o canal em **Redes sociais**, os vídeos novos entram sozinhos (feed RSS público, de 6 em 6 horas).
+- O LinkedIn e o Instagram não deixam ler as publicações de um perfil pessoal pela API, por isso entram colando o link.
+
 ## Estatísticas
 
 O backoffice tem **Estatísticas** (`/admin/stats`): visualizações e visitantes por dia, páginas mais vistas,

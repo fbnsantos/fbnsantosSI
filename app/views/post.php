@@ -20,4 +20,13 @@
     <?php if ($tags): ?>
         <ul class="tags"><?php foreach ($tags as $tag): ?><li><?= e($tag) ?></li><?php endforeach; ?></ul>
     <?php endif; ?>
+    <?php if (!$preview): $shareUrl = rawurlencode(abs_url('/blog/' . $post['slug'])); ?>
+        <p class="share">
+            <span class="muted"><?= e(t('Partilhar:')) ?></span>
+            <a class="chip" href="https://www.linkedin.com/sharing/share-offsite/?url=<?= $shareUrl ?>" target="_blank" rel="noopener">LinkedIn</a>
+            <a class="chip" href="https://x.com/intent/post?url=<?= $shareUrl ?>&amp;text=<?= rawurlencode($post['title']) ?>" target="_blank" rel="noopener">X</a>
+            <a class="chip" href="https://www.facebook.com/sharer/sharer.php?u=<?= $shareUrl ?>" target="_blank" rel="noopener">Facebook</a>
+            <a class="chip" href="mailto:?subject=<?= rawurlencode($post['title']) ?>&amp;body=<?= $shareUrl ?>">Email</a>
+        </p>
+    <?php endif; ?>
 </article>

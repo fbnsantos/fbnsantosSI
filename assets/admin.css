@@ -193,3 +193,18 @@ table.card { padding: 0; overflow: hidden; display: table; }
 .stats-label { overflow-wrap: anywhere; }
 .stats-meter { height: 4px; margin-top: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
 .stats-meter span { display: block; height: 100%; background: var(--accent); border-radius: 2px; }
+
+/* Destaques e redes sociais */
+form.inline { display: inline-flex; margin: 0; }
+.stats-range form.inline { margin-left: auto; }
+.highlight-add { display: grid; gap: 10px; }
+.highlight-add details { font-size: 0.9rem; }
+.hl-thumb { width: 72px; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 6px; display: block; }
+.highlights-table td { vertical-align: middle; }
+.highlights-table td form.inline + form.inline { margin-left: 4px; }
+.highlights-table tr.is-hidden td { opacity: 0.55; }
+.steps { padding-left: 20px; display: grid; gap: 8px; font-size: 0.9rem; }
+.copy-line { display: inline-block; margin: 4px 6px 0 0; word-break: break-all; }
+.share-card { margin-top: 16px; }
+.share-card textarea { width: 100%; }
+.share-card .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }

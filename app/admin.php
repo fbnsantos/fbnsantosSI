@@ -1,7 +1,10 @@
 <?php
 declare(strict_types=1);
 
-const RESERVED_SLUGS = ['admin', 'api', 'blog', 'home', 'feed', 'sitemap', 'robots', 'assets', 'uploads', 'favicon'];
+require_once __DIR__ . '/linkedin.php';
+require_once __DIR__ . '/admin_social.php';
+
+const RESERVED_SLUGS = ['admin', 'api', 'blog', 'home', 'feed', 'sitemap', 'robots', 'assets', 'uploads', 'favicon', 'highlights', 'destaques'];
 const LOGIN_MAX_ATTEMPTS = 5;
 const LOGIN_WINDOW = 900; // 15 minutos
 
@@ -108,6 +111,8 @@ function route_admin(string $sub, string $method): void
         db()->prepare('DELETE FROM api_tokens WHERE id = ?')->execute([(int) $m[1]]);
         flash('Chave revogada: deixou de funcionar.');
         redirect('/admin/api');
+    } elseif (route_admin_social($sub, $method)) {
+        return;
     } else {
         http_response_code(404);
         admin_render('message', ['title' => 'Não encontrado', 'message' => 'Esta página do backoffice não existe.']);

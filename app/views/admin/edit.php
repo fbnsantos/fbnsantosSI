@@ -126,6 +126,39 @@ $review = $item['id'] ? ($item['review_status'] ?? '') : '';
     </div>
 </form>
 
+<?php
+$isPublic = $item['id'] && $item['published'] && !$review && (!$isPost || $item['published_at'] <= now());
+if ($isPublic):
+    $shareText = linkedin_default_text($type, $item);
+    $shares = social_shares($type, (int) $item['id']);
+    ?>
+    <section class="card share-card" id="partilhar">
+        <h2>Partilhar no LinkedIn</h2>
+        <?php if ($shares): ?>
+            <p class="muted">Já partilhado:
+                <?php foreach ($shares as $s): ?>
+                    <a href="<?= e(linkedin_post_url($s['external_id'])) ?>" target="_blank" rel="noopener"><?= e(format_date($s['created_at'])) ?> ↗</a>
+                <?php endforeach; ?>
+            </p>
+        <?php endif; ?>
+        <form method="post" action="/admin/<?= $type ?>/<?= (int) $item['id'] ?>/linkedin">
+            <?= csrf_field() ?>
+            <label>Texto da publicação <span class="muted small">(o link e a imagem de capa vão num cartão por baixo)</span>
+                <textarea name="text" rows="6" maxlength="2900"><?= e($shareText) ?></textarea>
+            </label>
+            <div class="actions">
+                <?php if (linkedin_connected()): ?>
+                    <button class="btn primary" data-confirm="Publicar agora no seu perfil do LinkedIn (público)?">Publicar no LinkedIn</button>
+                    <span class="muted small">como <?= e(setting('linkedin_name')) ?></span>
+                <?php else: ?>
+                    <a class="btn" href="/admin/social#linkedin">Ligar ao LinkedIn para publicar daqui</a>
+                <?php endif; ?>
+                <a class="btn" href="<?= e(linkedin_compose_url($shareText, abs_url(public_url($type, $item)))) ?>" target="_blank" rel="noopener">Abrir no LinkedIn e publicar à mão ↗</a>
+            </div>
+        </form>
+    </section>
+<?php endif; ?>
+
 <?php if ($item['id'] && !$isHome): ?>
     <form id="delete-form" method="post" action="/admin/<?= $type ?>/<?= $item['id'] ?>/delete"><?= csrf_field() ?></form>
 <?php endif; ?>

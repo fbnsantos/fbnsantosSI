@@ -8,6 +8,9 @@ foreach (menu_pages() as $item) {
 if (has_public_posts()) {
     $menu[] = ['/blog', setting('blog_title', 'Blog')];
 }
+if (has_highlights()) {
+    $menu[] = ['/highlights', highlights_title()];
+}
 ?><!doctype html>
 <html lang="<?= e(setting('site_lang', 'pt-PT')) ?>">
 <head>

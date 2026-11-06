@@ -131,6 +131,19 @@ function t(string $key, mixed ...$args): string
         'O endereço que procura não existe ou foi movido.' => 'The page you are looking for does not exist or has moved.',
         'Voltar ao início' => 'Back to home',
         'Pré-visualização — não publicado.' => 'Preview — not published.',
+        'Destaques' => 'Highlights',
+        'Vídeos, publicações e projetos de %s.' => 'Videos, posts and projects by %s.',
+        'Ver todos os destaques →' => 'See all highlights →',
+        'Ainda não há destaques.' => 'No highlights yet.',
+        'Ver no YouTube' => 'Watch on YouTube',
+        'Ver no LinkedIn' => 'View on LinkedIn',
+        'Ver no Instagram' => 'View on Instagram',
+        'Abrir' => 'Open',
+        'Filtrar' => 'Filter',
+        'Tudo' => 'All',
+        'Outros' => 'Other',
+        'Siga também:' => 'Follow me on:',
+        'Partilhar:' => 'Share:',
     ];
     $s = site_is_pt() ? $key : ($en[$key] ?? $key);
     return $args ? sprintf($s, ...$args) : $s;

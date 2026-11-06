@@ -43,6 +43,11 @@ function route_site(string $path): void
         case '/blog':
             show_blog();
             return;
+        case '/highlights':
+            show_highlights();
+            return;
+        case '/destaques':
+            redirect('/highlights', 301);
     }
     if (preg_match('#^/([a-f0-9]{32})\.txt$#', $path, $m) && hash_equals(indexnow_key(), $m[1])) {
         header('Content-Type: text/plain; charset=utf-8');
@@ -79,8 +84,10 @@ function show_home(): void
             'dateModified' => iso_date($page['updated_at']),
         ]], video_schemas($page['content'], setting('site_name'), setting('site_description'), iso_date($page['updated_at']))),
     ];
+    $highlights = setting('highlights_home', '1') === '1' ? highlights_list(3) : [];
     track_view('home', isset($page['id']) ? (int) $page['id'] : null);
-    render('home', compact('page', 'posts', 'meta'));
+    youtube_sync_in_background();
+    render('home', compact('page', 'posts', 'meta', 'highlights'));
 }
 
 function show_page(string $slug): void
@@ -220,6 +227,54 @@ function show_post(string $slug): void
         track_view('post', (int) $post['id']);
     }
     render('post', compact('post', 'meta', 'preview', 'tags'));
+}
+
+function highlights_title(): string
+{
+    return setting('highlights_title', t('Destaques'));
+}
+
+function show_highlights(): void
+{
+    $kind = (string) ($_GET['tipo'] ?? '');
+    if ($kind !== '' && !isset(HIGHLIGHT_KINDS[$kind])) {
+        redirect('/highlights', 301);
+    }
+    $items = highlights_list(90, $kind);
+    $kinds = db()->query('SELECT kind, COUNT(*) FROM highlights WHERE visible = 1 GROUP BY kind')->fetchAll(PDO::FETCH_KEY_PAIR);
+    $featured = $kind === '' ? array_values(array_filter($items, fn($h) => $h['featured'])) : [];
+    $rest = $kind === '' ? array_values(array_filter($items, fn($h) => !$h['featured'])) : $items;
+    $title = highlights_title();
+    $meta = [
+        'title' => $title . ($kind !== '' ? ' — ' . HIGHLIGHT_KINDS[$kind] : ''),
+        'description' => t('Vídeos, publicações e projetos de %s.', setting('author_name', setting('site_name'))),
+        'path' => '/highlights' . ($kind !== '' ? '?tipo=' . $kind : ''),
+        'noindex' => !$items || $kind !== '',
+        'schema' => [
+            [
+                '@type' => 'CollectionPage',
+                '@id' => abs_url('/highlights') . '#webpage',
+                'url' => abs_url('/highlights'),
+                'name' => $title,
+                'isPartOf' => ['@id' => abs_url('/') . '#website'],
+                'about' => ['@id' => abs_url('/') . '#person'],
+                'hasPart' => array_map(fn($h) => [
+                    '@type' => $h['kind'] === 'youtube' ? 'VideoObject' : 'CreativeWork',
+                    'name' => $h['title'],
+                    'url' => $h['url'],
+                ] + ($h['kind'] === 'youtube' ? [
+                    'thumbnailUrl' => $h['image'] ? abs_url($h['image']) : 'https://i.ytimg.com/vi/' . youtube_id($h['url']) . '/hqdefault.jpg',
+                    'uploadDate' => iso_date($h['item_date']),
+                    'description' => $h['description'] ?: $h['title'],
+                    'embedUrl' => 'https://www.youtube-nocookie.com/embed/' . youtube_id($h['url']),
+                ] : []), array_slice($items, 0, 30)),
+            ],
+            breadcrumb_schema([[t('Início'), '/'], [$title, '/highlights']]),
+        ],
+    ];
+    track_view('highlights');
+    youtube_sync_in_background();
+    render('highlights', compact('items', 'featured', 'rest', 'kinds', 'kind', 'title', 'meta'));
 }
 
 function not_found(): void

@@ -247,6 +247,9 @@ function sitemap_xml(): string
     if ($latest) {
         $add('/blog', $latest);
     }
+    if ($hl = db()->query('SELECT MAX(created_at) FROM highlights WHERE visible = 1')->fetchColumn()) {
+        $add('/highlights', $hl);
+    }
     $posts = db()->query('SELECT * FROM posts WHERE ' . public_posts_where() . ' AND noindex = 0 ORDER BY published_at DESC');
     foreach ($posts as $p) {
         $add('/blog/' . $p['slug'], $p['updated_at'], $p['content'], $p['cover_image'], $p['title'],

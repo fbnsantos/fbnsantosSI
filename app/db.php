@@ -115,6 +115,28 @@ function migrate(PDO $pdo): void
         created_at TEXT NOT NULL,
         last_used_at TEXT
     );
+    CREATE TABLE IF NOT EXISTS highlights (
+        id INTEGER PRIMARY KEY,
+        kind TEXT NOT NULL DEFAULT 'link',
+        url TEXT NOT NULL UNIQUE,
+        title TEXT NOT NULL DEFAULT '',
+        description TEXT NOT NULL DEFAULT '',
+        image TEXT NOT NULL DEFAULT '',
+        item_date TEXT NOT NULL,
+        featured INTEGER NOT NULL DEFAULT 0,
+        visible INTEGER NOT NULL DEFAULT 1,
+        source TEXT NOT NULL DEFAULT 'manual',
+        created_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS highlights_list ON highlights (visible, item_date);
+    CREATE TABLE IF NOT EXISTS social_shares (
+        id INTEGER PRIMARY KEY,
+        content_type TEXT NOT NULL,
+        content_id INTEGER NOT NULL,
+        network TEXT NOT NULL,
+        external_id TEXT NOT NULL DEFAULT '',
+        created_at TEXT NOT NULL
+    );
     SQL);
 
     // Aprovação do que chega pela API: review_status = 'pending' até ser aprovado no backoffice;

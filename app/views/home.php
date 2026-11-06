@@ -42,3 +42,11 @@
         </section>
     <?php endif; ?>
 </div>
+
+<?php if ($highlights): ?>
+    <section class="latest wrap-wide hl-home">
+        <h2><?= e(highlights_title()) ?></h2>
+        <?php $cards = $highlights; $large = false; require __DIR__ . '/partials/highlight-cards.php'; ?>
+        <p><a class="more" href="/highlights"><?= e(t('Ver todos os destaques →')) ?></a></p>
+    </section>
+<?php endif; ?>
