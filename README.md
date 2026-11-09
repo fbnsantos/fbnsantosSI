@@ -199,6 +199,16 @@ vídeos do YouTube, publicações do LinkedIn e do Instagram e outros links. Ger
 - Itens sincronizados não se apagam (voltariam na sincronização seguinte): escondem-se. Os adicionados à mão podem ser apagados.
 - O nome do autor fica a negrito nas listas (variantes preenchidas a partir do ORCID e do Authenticus; editáveis).
 
+## Palestras, prémios e imprensa
+
+- Página pública `/activities`: cronologia por ano (palestras, prémios, imprensa, entrevistas), com filtros por tipo.
+  Os ★ destacados aparecem também na página inicial (se não houver, os 3 mais recentes; desligável nas opções).
+- Backoffice → **Palestras e prémios**: colar o link (notícia, página do evento, vídeo) e o site preenche título, meio/organizador,
+  data e imagem; depois revê-se e guarda-se. Também se pode criar à mão.
+- Cada item pode ter um vídeo (escolhido dos Destaques ou link do YouTube), que só carrega do YouTube (`youtube-nocookie`) quando se clica em ▶.
+- Os prémios entram no `Person.award` dos dados estruturados; palestras como `Event` e notícias como `NewsArticle`. Entra no sitemap e no `llms.txt`.
+- O ORCID tem uma secção *Distinctions*, mas o perfil não tem dados lá, por isso não há importação automática.
+
 ### Impacto (citações, quartil, fator de impacto)
 
 - **Citações**, FWCI e "Top 10% / 1%" de cada publicação: OpenAlex, pelo DOI, na sincronização diária. Com isto o site calcula

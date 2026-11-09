@@ -148,13 +148,14 @@ function highlight_normalize_url(string $url): string
  */
 function highlight_fetch_meta(string $url): array
 {
-    $meta = ['title' => '', 'description' => '', 'image' => '', 'date' => ''];
+    $meta = ['title' => '', 'description' => '', 'image' => '', 'date' => '', 'site' => ''];
     if ($id = youtube_id($url)) {
         $r = http_request('GET', 'https://www.youtube.com/oembed?format=json&url=' . rawurlencode($url), [], null, 10);
         $o = json_decode($r['body'], true);
         if ($r['status'] === 200 && is_array($o)) {
             $meta['title'] = (string) ($o['title'] ?? '');
             $meta['description'] = (string) ($o['author_name'] ?? '');
+            $meta['site'] = 'YouTube';
         }
         $meta['image'] = "https://i.ytimg.com/vi/$id/hqdefault.jpg";
         return $meta;
@@ -182,6 +183,7 @@ function highlight_fetch_meta(string $url): array
         $title = html_entity_decode(trim($t[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
     $meta['title'] = trim(preg_replace('/\s+/u', ' ', $title) ?? '');
+    $meta['site'] = trim($tags['og:site_name'] ?? $tags['application-name'] ?? '');
     $meta['description'] = trim(preg_replace('/\s+/u', ' ', $tags['og:description'] ?? $tags['description'] ?? $tags['twitter:description'] ?? '') ?? '');
     $image = $tags['og:image'] ?? $tags['og:image:url'] ?? $tags['twitter:image'] ?? '';
     if ($image !== '' && str_starts_with($image, '//')) {

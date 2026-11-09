@@ -8,6 +8,7 @@ $nav = [
     '/admin/review' => 'Para aprovar',
     '/admin/highlights' => 'Destaques',
     '/admin/research' => 'Investigação',
+    '/admin/activities' => 'Palestras e prémios',
     '/admin/media' => 'Imagens',
     '/admin/social' => 'Redes sociais',
     '/admin/settings' => 'Definições',

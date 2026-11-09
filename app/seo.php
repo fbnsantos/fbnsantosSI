@@ -81,6 +81,9 @@ function person_schema(): array
     if ($same = array_values(social_links())) {
         $p['sameAs'] = $same;
     }
+    if ($awards = activity_awards()) {
+        $p['award'] = $awards;
+    }
     return $p;
 }
 
@@ -256,6 +259,9 @@ function sitemap_xml(): string
     if ($rs = db()->query('SELECT MAX(updated_at) FROM projects WHERE visible = 1')->fetchColumn()) {
         $add('/research/projects', $rs);
     }
+    if ($ac = db()->query('SELECT MAX(updated_at) FROM activities WHERE visible = 1')->fetchColumn()) {
+        $add('/activities', $ac);
+    }
     $posts = db()->query('SELECT * FROM posts WHERE ' . public_posts_where() . ' AND noindex = 0 ORDER BY published_at DESC');
     foreach ($posts as $p) {
         $add('/blog/' . $p['slug'], $p['updated_at'], $p['content'], $p['cover_image'], $p['title'],
@@ -416,6 +422,16 @@ function llms_txt(): string
         $md[] = '';
         foreach ($projects as $p) {
             $md[] = '- ' . $p['title'] . ($p['funder'] ? ' — ' . $p['funder'] : '') . (project_years($p) ? ' (' . project_years($p) . ')' : '');
+        }
+    }
+    if ($acts = activities_list('', 40)) {
+        $md[] = '';
+        $md[] = '## ' . activities_title() . ' ([' . t('todos') . '](' . abs_url('/activities') . '))';
+        $md[] = '';
+        foreach ($acts as $a) {
+            $line = '- ' . ($a['item_date'] !== '' ? substr($a['item_date'], 0, 4) . '. ' : '') . activity_kind_label($a['kind']) . ': '
+                . ($a['url'] !== '' ? '[' . $a['title'] . '](' . $a['url'] . ')' : $a['title']);
+            $md[] = $line . ($a['event'] !== '' ? ' — ' . $a['event'] : '');
         }
     }
     if ($links = social_links()) {

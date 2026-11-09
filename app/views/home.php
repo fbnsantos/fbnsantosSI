@@ -43,6 +43,14 @@
     <?php endif; ?>
 </div>
 
+<?php if (!empty($activities)): ?>
+    <section class="latest wrap ac-home">
+        <h2><?= e(activities_title()) ?></h2>
+        <?php $acts = $activities; $compact = true; require __DIR__ . '/partials/activity-items.php'; ?>
+        <p><a class="more" href="/activities"><?= e(t('Ver tudo →')) ?></a></p>
+    </section>
+<?php endif; ?>
+
 <?php if ($highlights): ?>
     <section class="latest wrap-wide hl-home">
         <h2><?= e(highlights_title()) ?></h2>

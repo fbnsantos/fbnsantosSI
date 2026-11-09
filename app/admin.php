@@ -4,8 +4,9 @@ declare(strict_types=1);
 require_once __DIR__ . '/linkedin.php';
 require_once __DIR__ . '/admin_social.php';
 require_once __DIR__ . '/admin_research.php';
+require_once __DIR__ . '/admin_activities.php';
 
-const RESERVED_SLUGS = ['admin', 'api', 'blog', 'home', 'feed', 'sitemap', 'robots', 'assets', 'uploads', 'favicon', 'highlights', 'destaques', 'research', 'investigacao', 'publications', 'publicacoes', 'projects', 'projetos'];
+const RESERVED_SLUGS = ['admin', 'api', 'blog', 'home', 'feed', 'sitemap', 'robots', 'assets', 'uploads', 'favicon', 'highlights', 'destaques', 'research', 'investigacao', 'publications', 'publicacoes', 'projects', 'projetos', 'activities', 'palestras', 'premios', 'imprensa'];
 const LOGIN_MAX_ATTEMPTS = 5;
 const LOGIN_WINDOW = 900; // 15 minutos
 
@@ -112,7 +113,7 @@ function route_admin(string $sub, string $method): void
         db()->prepare('DELETE FROM api_tokens WHERE id = ?')->execute([(int) $m[1]]);
         flash('Chave revogada: deixou de funcionar.');
         redirect('/admin/api');
-    } elseif (route_admin_social($sub, $method) || route_admin_research($sub, $method)) {
+    } elseif (route_admin_social($sub, $method) || route_admin_research($sub, $method) || route_admin_activities($sub, $method)) {
         return;
     } else {
         http_response_code(404);

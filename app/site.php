@@ -61,6 +61,13 @@ function route_site(string $path): void
         case '/projects':
         case '/projetos':
             redirect('/research/projects', 301);
+        case '/activities':
+            show_activities();
+            return;
+        case '/palestras':
+        case '/premios':
+        case '/imprensa':
+            redirect('/activities', 301);
     }
     if (preg_match('#^/([a-f0-9]{32})\.txt$#', $path, $m) && hash_equals(indexnow_key(), $m[1])) {
         header('Content-Type: text/plain; charset=utf-8');
@@ -98,9 +105,10 @@ function show_home(): void
         ]], video_schemas($page['content'], setting('site_name'), setting('site_description'), iso_date($page['updated_at']))),
     ];
     $highlights = setting('highlights_home', '1') === '1' ? highlights_list(3) : [];
+    $activities = setting('activities_home', '1') === '1' ? activities_home() : [];
     track_view('home', isset($page['id']) ? (int) $page['id'] : null);
     youtube_sync_in_background();
-    render('home', compact('page', 'posts', 'meta', 'highlights'));
+    render('home', compact('page', 'posts', 'meta', 'highlights', 'activities'));
 }
 
 function show_page(string $slug): void
@@ -373,6 +381,68 @@ function show_research(string $tab): void
     track_view('research');
     $impact = research_impact_summary();
     render('research', compact('tab', 'type', 'byCites', 'types', 'items', 'featured', 'summary', 'impact', 'title', 'meta'));
+}
+
+function show_activities(): void
+{
+    $kind = (string) ($_GET['tipo'] ?? '');
+    if ($kind !== '' && !isset(ACTIVITY_KINDS[$kind])) {
+        redirect('/activities', 301);
+    }
+    $items = activities_list($kind);
+    if (!$items && $kind === '') {
+        not_found();
+        return;
+    }
+    $kinds = db()->query('SELECT kind, COUNT(*) FROM activities WHERE visible = 1 GROUP BY kind')->fetchAll(PDO::FETCH_KEY_PAIR);
+    $title = activities_title();
+    $author = setting('author_name', setting('site_name'));
+    $parts = [];
+    foreach (array_slice($items, 0, 60) as $a) {
+        $date = strlen($a['item_date']) >= 4 ? $a['item_date'] : null;
+        $parts[] = array_filter(match ($a['kind']) {
+            'talk' => [
+                '@type' => 'Event',
+                'name' => $a['title'],
+                'startDate' => $date,
+                'location' => $a['location'] || $a['event'] ? ['@type' => 'Place', 'name' => $a['location'] ?: $a['event']] : null,
+                'organizer' => $a['event'] ? ['@type' => 'Organization', 'name' => $a['event']] : null,
+                'performer' => ['@id' => abs_url('/') . '#person'],
+                'url' => $a['url'] ?: null,
+                'eventStatus' => 'https://schema.org/EventScheduled',
+                'eventAttendanceMode' => 'https://schema.org/OfflineEventAttendanceMode',
+            ],
+            'press', 'interview' => [
+                '@type' => 'NewsArticle',
+                'headline' => $a['title'],
+                'datePublished' => $date,
+                'publisher' => $a['event'] ? ['@type' => 'Organization', 'name' => $a['event']] : null,
+                'about' => ['@id' => abs_url('/') . '#person'],
+                'url' => $a['url'] ?: null,
+            ],
+            default => ['@type' => 'CreativeWork', 'name' => $a['title'], 'dateCreated' => $date, 'url' => $a['url'] ?: null],
+        });
+    }
+    $meta = [
+        'title' => $title . ($kind !== '' ? ' — ' . activity_kind_label($kind, true) : ''),
+        'description' => t('Palestras, prémios, notícias e entrevistas de %s.', $author),
+        'path' => '/activities' . ($kind !== '' ? '?tipo=' . $kind : ''),
+        'noindex' => $kind !== '',
+        'schema' => [
+            [
+                '@type' => 'CollectionPage',
+                '@id' => abs_url('/activities') . '#webpage',
+                'url' => abs_url('/activities'),
+                'name' => $title,
+                'isPartOf' => ['@id' => abs_url('/') . '#website'],
+                'about' => ['@id' => abs_url('/') . '#person'],
+                'hasPart' => $parts,
+            ],
+            breadcrumb_schema([[t('Início'), '/'], [$title, '/activities']]),
+        ],
+    ];
+    track_view('activities');
+    render('activities', compact('items', 'kinds', 'kind', 'title', 'meta'));
 }
 
 function not_found(): void

@@ -11,6 +11,9 @@ if (has_public_posts()) {
 if (has_research()) {
     $menu[] = ['/research', research_title()];
 }
+if (has_activities()) {
+    $menu[] = ['/activities', setting('activities_title') ?: t('Palestras e prémios')];
+}
 if (has_highlights()) {
     $menu[] = ['/highlights', highlights_title()];
 }

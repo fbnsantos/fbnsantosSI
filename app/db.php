@@ -213,6 +213,23 @@ function migrate(PDO $pdo): void
         jif_year INTEGER,
         updated_at TEXT NOT NULL DEFAULT ''
     );
+    CREATE TABLE IF NOT EXISTS activities (
+        id INTEGER PRIMARY KEY,
+        kind TEXT NOT NULL DEFAULT 'talk',
+        title TEXT NOT NULL,
+        event TEXT NOT NULL DEFAULT '',
+        location TEXT NOT NULL DEFAULT '',
+        item_date TEXT NOT NULL DEFAULT '',
+        url TEXT NOT NULL DEFAULT '',
+        description TEXT NOT NULL DEFAULT '',
+        image TEXT NOT NULL DEFAULT '',
+        video_url TEXT NOT NULL DEFAULT '',
+        featured INTEGER NOT NULL DEFAULT 0,
+        visible INTEGER NOT NULL DEFAULT 1,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS activities_list ON activities (visible, item_date);
     CREATE TABLE IF NOT EXISTS sjr (
         issn TEXT PRIMARY KEY,
         title TEXT NOT NULL DEFAULT '',
