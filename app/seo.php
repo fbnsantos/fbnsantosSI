@@ -250,6 +250,12 @@ function sitemap_xml(): string
     if ($hl = db()->query('SELECT MAX(created_at) FROM highlights WHERE visible = 1')->fetchColumn()) {
         $add('/highlights', $hl);
     }
+    if ($rs = db()->query('SELECT MAX(updated_at) FROM publications WHERE visible = 1')->fetchColumn()) {
+        $add('/research', $rs);
+    }
+    if ($rs = db()->query('SELECT MAX(updated_at) FROM projects WHERE visible = 1')->fetchColumn()) {
+        $add('/research/projects', $rs);
+    }
     $posts = db()->query('SELECT * FROM posts WHERE ' . public_posts_where() . ' AND noindex = 0 ORDER BY published_at DESC');
     foreach ($posts as $p) {
         $add('/blog/' . $p['slug'], $p['updated_at'], $p['content'], $p['cover_image'], $p['title'],
@@ -391,6 +397,25 @@ function llms_txt(): string
         $md[] = '';
         foreach ($posts as $p) {
             $md[] = '- [' . $p['title'] . '](' . abs_url('/blog/' . $p['slug']) . '): ' . ($p['excerpt'] ?: text_excerpt($p['content'], 140));
+        }
+    }
+    $pubs = db()->query('SELECT * FROM publications WHERE visible = 1 ORDER BY featured DESC, year DESC, id DESC LIMIT 40')->fetchAll();
+    if ($pubs) {
+        $md[] = '';
+        $md[] = '## ' . t('Publicações') . ' ([' . t('todas') . '](' . abs_url('/research') . '))';
+        $md[] = '';
+        foreach ($pubs as $p) {
+            $md[] = '- ' . ($p['year'] ? "{$p['year']}. " : '') . (pub_link($p) ? '[' . $p['title'] . '](' . pub_link($p) . ')' : $p['title'])
+                . ($p['venue'] ? '. ' . $p['venue'] : '');
+        }
+    }
+    $projects = db()->query("SELECT * FROM projects WHERE visible = 1 ORDER BY featured DESC, COALESCE(NULLIF(end_date, ''), '9999') DESC LIMIT 30")->fetchAll();
+    if ($projects) {
+        $md[] = '';
+        $md[] = '## ' . t('Projetos') . ' ([' . t('todos') . '](' . abs_url('/research/projects') . '))';
+        $md[] = '';
+        foreach ($projects as $p) {
+            $md[] = '- ' . $p['title'] . ($p['funder'] ? ' — ' . $p['funder'] : '') . (project_years($p) ? ' (' . project_years($p) . ')' : '');
         }
     }
     if ($links = social_links()) {

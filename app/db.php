@@ -129,6 +129,48 @@ function migrate(PDO $pdo): void
         created_at TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS highlights_list ON highlights (visible, item_date);
+    CREATE TABLE IF NOT EXISTS publications (
+        id INTEGER PRIMARY KEY,
+        title TEXT NOT NULL,
+        norm TEXT NOT NULL UNIQUE,
+        authors TEXT NOT NULL DEFAULT '',
+        venue TEXT NOT NULL DEFAULT '',
+        year INTEGER NOT NULL DEFAULT 0,
+        pub_date TEXT NOT NULL DEFAULT '',
+        type TEXT NOT NULL DEFAULT 'other',
+        doi TEXT NOT NULL DEFAULT '',
+        url TEXT NOT NULL DEFAULT '',
+        indexed TEXT NOT NULL DEFAULT '',
+        sources TEXT NOT NULL DEFAULT '',
+        orcid_code TEXT NOT NULL DEFAULT '',
+        authenticus_id TEXT NOT NULL DEFAULT '',
+        featured INTEGER NOT NULL DEFAULT 0,
+        visible INTEGER NOT NULL DEFAULT 1,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS publications_list ON publications (visible, year);
+    CREATE INDEX IF NOT EXISTS publications_doi ON publications (doi);
+    CREATE TABLE IF NOT EXISTS projects (
+        id INTEGER PRIMARY KEY,
+        title TEXT NOT NULL,
+        norm TEXT NOT NULL UNIQUE,
+        acronym TEXT NOT NULL DEFAULT '',
+        funder TEXT NOT NULL DEFAULT '',
+        type TEXT NOT NULL DEFAULT '',
+        start_date TEXT NOT NULL DEFAULT '',
+        end_date TEXT NOT NULL DEFAULT '',
+        grant_number TEXT NOT NULL DEFAULT '',
+        url TEXT NOT NULL DEFAULT '',
+        description TEXT NOT NULL DEFAULT '',
+        role TEXT NOT NULL DEFAULT '',
+        sources TEXT NOT NULL DEFAULT '',
+        orcid_code TEXT NOT NULL DEFAULT '',
+        featured INTEGER NOT NULL DEFAULT 0,
+        visible INTEGER NOT NULL DEFAULT 1,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+    );
     CREATE TABLE IF NOT EXISTS social_shares (
         id INTEGER PRIMARY KEY,
         content_type TEXT NOT NULL,

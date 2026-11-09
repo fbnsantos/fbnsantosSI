@@ -20,6 +20,7 @@ require __DIR__ . '/seo.php';
 require __DIR__ . '/ogimage.php';
 require __DIR__ . '/geoip.php';
 require __DIR__ . '/social.php';
+require __DIR__ . '/research.php';
 require __DIR__ . '/stats.php';
 
 header('X-Content-Type-Options: nosniff');

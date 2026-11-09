@@ -187,6 +187,18 @@ vídeos do YouTube, publicações do LinkedIn e do Instagram e outros links. Ger
 - YouTube: indicando o canal em **Redes sociais**, os vídeos novos entram sozinhos (feed RSS público, de 6 em 6 horas).
 - O LinkedIn e o Instagram não deixam ler as publicações de um perfil pessoal pela API, por isso entram colando o link.
 
+## Investigação (publicações e projetos)
+
+- Página pública `/research` (publicações por ano, filtro por tipo e pesquisa) e `/research/projects` (projetos em curso e concluídos).
+  Aparece no menu quando há itens visíveis; entra no sitemap, no `llms.txt` e tem dados estruturados (ScholarlyArticle, ResearchProject).
+- Backoffice → **Investigação**: indicar o ORCID iD e o Authenticus (URL da lista de publicações, número ou `R-XXX-XXX`).
+- **ORCID**: API pública (sem chave) → publicações com autores e projetos (secção *Funding*). Só o que é público no ORCID.
+- **Authenticus**: lista pública de publicações do investigador (a API do Authenticus só é dada a instituições) → publicações validadas, com indexação Scopus/WoS.
+- As fontes são juntadas pelo DOI ou pelo título. A sincronização corre sozinha uma vez por dia (em segundo plano, depois de uma visita)
+  ou no botão **Sincronizar agora**; só acrescenta e preenche campos vazios — o que for editado, escondido ou ★ destacado mantém-se.
+- Itens sincronizados não se apagam (voltariam na sincronização seguinte): escondem-se. Os adicionados à mão podem ser apagados.
+- O nome do autor fica a negrito nas listas (variantes preenchidas a partir do ORCID e do Authenticus; editáveis).
+
 ## Estatísticas
 
 O backoffice tem **Estatísticas** (`/admin/stats`): visualizações e visitantes por dia, páginas mais vistas,

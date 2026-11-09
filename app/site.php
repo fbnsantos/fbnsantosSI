@@ -48,6 +48,19 @@ function route_site(string $path): void
             return;
         case '/destaques':
             redirect('/highlights', 301);
+        case '/research':
+            show_research('pubs');
+            return;
+        case '/research/projects':
+            show_research('projects');
+            return;
+        case '/investigacao':
+        case '/publications':
+        case '/publicacoes':
+            redirect('/research', 301);
+        case '/projects':
+        case '/projetos':
+            redirect('/research/projects', 301);
     }
     if (preg_match('#^/([a-f0-9]{32})\.txt$#', $path, $m) && hash_equals(indexnow_key(), $m[1])) {
         header('Content-Type: text/plain; charset=utf-8');
@@ -275,6 +288,88 @@ function show_highlights(): void
     track_view('highlights');
     youtube_sync_in_background();
     render('highlights', compact('items', 'featured', 'rest', 'kinds', 'kind', 'title', 'meta'));
+}
+
+function show_research(string $tab): void
+{
+    research_sync_in_background();
+    $type = (string) ($_GET['tipo'] ?? '');
+    if ($type !== '' && ($tab !== 'pubs' || !isset(PUB_TYPES[$type]))) {
+        redirect($tab === 'pubs' ? '/research' : '/research/projects', 301);
+    }
+    $pubCount = (int) db()->query('SELECT COUNT(*) FROM publications WHERE visible = 1')->fetchColumn();
+    $projCount = (int) db()->query('SELECT COUNT(*) FROM projects WHERE visible = 1')->fetchColumn();
+    if ($pubCount + $projCount === 0) {
+        not_found();
+        return;
+    }
+    if ($tab === 'pubs' && $pubCount === 0) {
+        redirect('/research/projects');
+    }
+    $title = research_title();
+    $author = setting('author_name', setting('site_name'));
+    $path = $tab === 'pubs' ? '/research' : '/research/projects';
+    $types = db()->query('SELECT type, COUNT(*) FROM publications WHERE visible = 1 GROUP BY type')->fetchAll(PDO::FETCH_KEY_PAIR);
+    $summary = [
+        'pubs' => $pubCount,
+        'articles' => (int) ($types['article'] ?? 0),
+        'indexed' => (int) db()->query("SELECT COUNT(*) FROM publications WHERE visible = 1 AND indexed <> ''")->fetchColumn(),
+        'projects' => $projCount,
+        'since' => (int) db()->query('SELECT MIN(year) FROM publications WHERE visible = 1 AND year > 0')->fetchColumn(),
+    ];
+    $featured = [];
+    $items = [];
+    if ($tab === 'pubs') {
+        $st = db()->prepare('SELECT * FROM publications WHERE visible = 1' . ($type ? ' AND type = ?' : '') . ' ORDER BY year DESC, pub_date DESC, id DESC');
+        $st->execute($type ? [$type] : []);
+        $items = $st->fetchAll();
+        $featured = $type === '' ? array_values(array_filter($items, fn($p) => $p['featured'])) : [];
+        $parts = array_map(fn($p) => array_filter([
+            '@type' => 'ScholarlyArticle',
+            'name' => $p['title'],
+            'author' => array_map(fn($a) => ['@type' => 'Person', 'name' => trim($a)], array_slice(array_filter(explode(';', $p['authors'])), 0, 12)),
+            'datePublished' => $p['pub_date'] ?: ($p['year'] ? (string) $p['year'] : ''),
+            'isPartOf' => $p['venue'] ? ['@type' => 'CreativeWork', 'name' => $p['venue']] : null,
+            'url' => pub_link($p),
+            'sameAs' => $p['doi'] ? 'https://doi.org/' . $p['doi'] : null,
+        ]), array_slice($items, 0, 100));
+        $description = t('Publicações científicas de %s: artigos em revista, conferências e capítulos de livro.', $author);
+    } else {
+        $items = db()->query("SELECT * FROM projects WHERE visible = 1
+            ORDER BY featured DESC, (end_date = '' OR end_date >= date('now')) DESC, COALESCE(NULLIF(end_date, ''), '9999') DESC, start_date DESC")->fetchAll();
+        $parts = array_map(fn($p) => array_filter([
+            '@type' => 'ResearchProject',
+            'name' => $p['title'],
+            'alternateName' => $p['acronym'] ?: null,
+            'description' => $p['description'] ?: null,
+            'funder' => $p['funder'] ? ['@type' => 'Organization', 'name' => $p['funder']] : null,
+            'url' => $p['url'] ?: null,
+            'foundingDate' => $p['start_date'] ?: null,
+            'dissolutionDate' => $p['end_date'] ?: null,
+        ]), $items);
+        $description = t('Projetos de investigação e desenvolvimento de %s.', $author);
+    }
+    $tabTitle = $tab === 'pubs' ? t('Publicações') : t('Projetos');
+    $meta = [
+        'title' => $tabTitle . ' — ' . $title . ($type !== '' ? ' — ' . pub_type_label($type) : ''),
+        'description' => $description,
+        'path' => $path . ($type !== '' ? '?tipo=' . $type : ''),
+        'noindex' => $type !== '',
+        'schema' => [
+            [
+                '@type' => 'CollectionPage',
+                '@id' => abs_url($path) . '#webpage',
+                'url' => abs_url($path),
+                'name' => $tabTitle,
+                'isPartOf' => ['@id' => abs_url('/') . '#website'],
+                'about' => ['@id' => abs_url('/') . '#person'],
+                'hasPart' => array_values($parts),
+            ],
+            breadcrumb_schema([[t('Início'), '/'], [$title, '/research']] + ($tab === 'projects' ? [2 => [$tabTitle, $path]] : [])),
+        ],
+    ];
+    track_view('research');
+    render('research', compact('tab', 'type', 'types', 'items', 'featured', 'summary', 'title', 'meta'));
 }
 
 function not_found(): void

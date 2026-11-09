@@ -208,3 +208,20 @@ form.inline { display: inline-flex; margin: 0; }
 .share-card { margin-top: 16px; }
 .share-card textarea { width: 100%; }
 .share-card .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+.notice { padding: 10px 14px; border-radius: 8px; margin: 0 0 16px; background: #dcfce7; color: #14532d; font-size: 0.9rem; }
+.notice.error { background: #fee2e2; color: #7f1d1d; }
+details.card > summary { cursor: pointer; list-style: revert; }
+details.card > summary h2 { margin: 0 8px 0 0; }
+details.card[open] > summary { margin-bottom: 14px; }
+.research-filter { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 14px; }
+.research-filter input[type=search] { flex: 1 1 260px; margin: 0; }
+.research-filter select { width: auto; margin: 0; }
+.bulk-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 8px; }
+.bulk-bar select { width: auto; margin: 0; }
+.bulk-bar .check { margin: 0; }
+.research-table td:first-child { width: 28px; padding-right: 0; }
+.research-table td .badge { margin-right: 4px; }
+.research-table tr.is-hidden td { opacity: 0.55; }
+.stats-range + .research-filter { margin-top: 14px; }
+.research-table td:nth-child(2) { width: 62%; min-width: 260px; }
+.research-table td:nth-child(4) { white-space: normal; }

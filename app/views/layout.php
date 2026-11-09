@@ -8,6 +8,9 @@ foreach (menu_pages() as $item) {
 if (has_public_posts()) {
     $menu[] = ['/blog', setting('blog_title', 'Blog')];
 }
+if (has_research()) {
+    $menu[] = ['/research', research_title()];
+}
 if (has_highlights()) {
     $menu[] = ['/highlights', highlights_title()];
 }

@@ -45,9 +45,16 @@ function redirect(string $to, int $code = 302): never
     exit;
 }
 
-function settings(): array
+/** Cache das definições (por referência, para setting_set() o manter atualizado). */
+function &settings_cache(): ?array
 {
     static $cache = null;
+    return $cache;
+}
+
+function settings(): array
+{
+    $cache = &settings_cache();
     if ($cache === null) {
         $cache = [];
         foreach (db()->query('SELECT name, value FROM settings') as $row) {
@@ -144,6 +151,29 @@ function t(string $key, mixed ...$args): string
         'Outros' => 'Other',
         'Siga também:' => 'Follow me on:',
         'Partilhar:' => 'Share:',
+        'Investigação' => 'Research',
+        'Publicações' => 'Publications',
+        'Projetos' => 'Projects',
+        'Artigos em revista' => 'Journal articles',
+        'Artigos em conferência' => 'Conference papers',
+        'Capítulos de livro' => 'Book chapters',
+        'Livros' => 'Books',
+        'Teses' => 'Theses',
+        'Patentes' => 'Patents',
+        'Indexadas Scopus / WoS' => 'Indexed in Scopus / WoS',
+        'Publicações em destaque' => 'Selected publications',
+        'Pesquisar' => 'Search',
+        'Pesquisar título, autor, revista…' => 'Search title, author, venue…',
+        'Nenhum resultado.' => 'No results.',
+        'Sem data' => 'Undated',
+        'Em curso' => 'Ongoing',
+        'Concluído' => 'Completed',
+        'Financiamento:' => 'Funding:',
+        'Fontes:' => 'Sources:',
+        'todas' => 'all',
+        'todos' => 'all',
+        'Publicações científicas de %s: artigos em revista, conferências e capítulos de livro.' => 'Scientific publications by %s: journal articles, conference papers and book chapters.',
+        'Projetos de investigação e desenvolvimento de %s.' => 'Research and development projects by %s.',
     ];
     $s = site_is_pt() ? $key : ($en[$key] ?? $key);
     return $args ? sprintf($s, ...$args) : $s;

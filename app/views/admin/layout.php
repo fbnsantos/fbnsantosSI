@@ -7,6 +7,7 @@ $nav = [
     '/admin/posts' => 'Artigos',
     '/admin/review' => 'Para aprovar',
     '/admin/highlights' => 'Destaques',
+    '/admin/research' => 'Investigação',
     '/admin/media' => 'Imagens',
     '/admin/social' => 'Redes sociais',
     '/admin/settings' => 'Definições',

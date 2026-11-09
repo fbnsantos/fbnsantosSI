@@ -106,6 +106,10 @@ function setting_set(string $name, string $value): void
 {
     db()->prepare('INSERT INTO settings (name, value) VALUES (?, ?) ON CONFLICT(name) DO UPDATE SET value = excluded.value')
         ->execute([$name, $value]);
+    $cache = &settings_cache();
+    if ($cache !== null) {
+        $cache[$name] = $value;
+    }
 }
 
 /* ---------- Destaques ---------- */

@@ -208,3 +208,48 @@ main { min-height: 60vh; padding-bottom: 72px; }
 .hl-follow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0 48px; }
 .hl-home { margin-top: 8px; }
 .share { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 28px 0 0; }
+
+/* ---------- Investigação (/research) ---------- */
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.small { font-size: 0.85rem; }
+.rs-stats { display: flex; flex-wrap: wrap; gap: 10px 36px; margin: 18px 0 0; }
+.rs-stats div { display: flex; flex-direction: column-reverse; }
+.rs-stats dt { font-size: 0.8rem; color: var(--muted); }
+.rs-stats dd { margin: 0; font-family: var(--serif); font-size: 2rem; line-height: 1.1; color: var(--brick-dark); }
+.rs-tabs { margin-top: 20px; }
+.rs-tabs a { font-size: 1rem; padding: 6px 18px; }
+.rs { padding-bottom: 48px; }
+.rs-h { font-size: 1.25rem; margin: 0 0 14px; }
+.rs-kicker { margin: 0; display: flex; gap: 10px; align-items: center; font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.rs-featured { list-style: none; padding: 0; margin: 0 0 36px; display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
+.rs-featured li { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--brick); border-radius: var(--radius); padding: 16px 20px; }
+.rs-featured h3 { margin: 6px 0; font-size: 1.1rem; line-height: 1.35; }
+.rs-featured h3 a, .rs-title a, .rs-project h3 a { color: var(--fg); text-decoration: none; }
+.rs-featured h3 a:hover, .rs-title a:hover, .rs-project h3 a:hover { color: var(--brick-dark); text-decoration: underline; }
+.rs-tools { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin: 0 0 8px; }
+.rs-tools .hl-filter { margin: 0; }
+.rs-n { font-size: 0.8em; color: var(--muted); font-weight: 400; }
+.hl-filter a[aria-current] .rs-n { color: inherit; opacity: .85; }
+.rs-search input { width: min(320px, 100%); padding: 7px 14px; border: 1px solid var(--line); border-radius: 99px; background: var(--surface); font: inherit; font-size: 0.9rem; }
+.rs-search input:focus { outline: 2px solid var(--brick); outline-offset: 1px; }
+.rs-year h2 { font-size: 1.4rem; margin: 30px 0 6px; padding-bottom: 6px; border-bottom: 1px solid var(--line); display: flex; gap: 10px; align-items: baseline; }
+.rs-list { list-style: none; padding: 0; margin: 0; }
+.rs-list li { padding: 12px 0; border-bottom: 1px dashed var(--line); }
+.rs-list li:last-child { border-bottom: 0; }
+.rs-title { margin: 0; font-weight: 600; line-height: 1.4; }
+.rs-authors { margin: 3px 0 0; font-size: 0.9rem; color: var(--muted); }
+.rs-authors b { color: var(--fg); font-weight: 600; }
+.rs-meta { margin: 4px 0 0; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; font-size: 0.85rem; color: var(--muted); }
+.rs-venue { font-style: italic; }
+.rs-type { color: var(--brick-dark); }
+.rs-badge { font-size: 0.72rem; padding: 0 7px; border-radius: 99px; background: var(--brick-soft); color: var(--brick-dark); }
+.rs-doi { font-size: 0.8rem; }
+.rs-projects { list-style: none; padding: 0; margin: 0; display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); }
+.rs-project { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; }
+.rs-project.is-featured { border-left: 4px solid var(--brick); }
+.rs-project h3 { margin: 0; font-size: 1.05rem; line-height: 1.4; }
+.rs-project p { margin: 0; }
+.rs-acr { display: block; font-family: var(--serif); font-size: 1.35rem; color: var(--brick-dark); margin-bottom: 2px; }
+.rs-status { padding: 1px 9px; border-radius: 99px; background: var(--bg); border: 1px solid var(--line); text-transform: none; letter-spacing: 0; }
+.rs-status.is-on { background: #e7f5ea; border-color: #b7dfc0; color: #1d6b34; }
+.rs-sources { margin-top: 36px; }
