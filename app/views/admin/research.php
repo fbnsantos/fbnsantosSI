@@ -64,6 +64,7 @@ $link = fn(array $p) => '/admin/research?' . http_build_query(array_filter(array
 <nav class="stats-range" aria-label="Separadores">
     <a class="btn<?= $tab === 'pubs' ? ' primary' : '' ?>" href="/admin/research">Publicações (<?= $counts['pubs'] ?>)</a>
     <a class="btn<?= $tab === 'projects' ? ' primary' : '' ?>" href="/admin/research?tab=projetos">Projetos (<?= $counts['projects'] ?>)</a>
+    <a class="btn" href="/admin/research?tab=revistas">Revistas e impacto (<?= $counts['journals'] ?>)</a>
 </nav>
 
 <form method="get" action="/admin/research" class="research-filter">
@@ -122,6 +123,9 @@ $link = fn(array $p) => '/admin/research?' . http_build_query(array_filter(array
                                 <?= e(mb_strimwidth($it['venue'], 0, 80, '…')) ?>
                                 <?php if ($it['indexed']): ?> · <?= e(str_replace(',', ' · ', $it['indexed'])) ?><?php endif; ?>
                                 <?php if (!$it['authors']): ?> · <em>sem autores</em><?php endif; ?>
+                                <?php $jm = $it['issn'] ? journal_metrics($it['issn']) : null; ?>
+                                <?php if ($jm && $jm['quartile']): ?> · <span class="q q<?= e(substr($jm['quartile'], 1)) ?>" title="<?= e($jm['quartile_src']) ?>"><?= e($jm['quartile']) ?></span><?php endif; ?>
+                                <?php if ($it['citations'] !== null): ?> · <?= (int) $it['citations'] ?> <?= (int) $it['citations'] === 1 ? 'citação' : 'citações' ?><?php endif; ?>
                             <?php else: ?>
                                 <?= e($it['funder']) ?><?php if ($it['grant_number']): ?> · <?= e($it['grant_number']) ?><?php endif; ?>
                                 <?php if (project_ongoing($it)): ?> · <span class="badge">Em curso</span><?php endif; ?>

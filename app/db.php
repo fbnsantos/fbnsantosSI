@@ -189,6 +189,40 @@ function migrate(PDO $pdo): void
         $pdo->exec("ALTER TABLE api_tokens ADD COLUMN token_enc TEXT NOT NULL DEFAULT ''");
     }
 
+    // Impacto das publicações (OpenAlex: citações, FWCI, percentil; revista: ISSN-L).
+    $cols = array_column($pdo->query('PRAGMA table_info(publications)')->fetchAll(), 'name');
+    foreach (['citations' => 'INTEGER', 'fwci' => 'REAL', 'percentile' => 'REAL', 'issn' => 'TEXT', 'openalex_id' => 'TEXT', 'metrics_at' => 'TEXT'] as $col => $type) {
+        if (!in_array($col, $cols, true)) {
+            $pdo->exec("ALTER TABLE publications ADD COLUMN $col $type" . ($type === 'TEXT' ? " NOT NULL DEFAULT ''" : ''));
+        }
+    }
+    $pdo->exec(<<<SQL
+    CREATE TABLE IF NOT EXISTS journals (
+        issn TEXT PRIMARY KEY,
+        name TEXT NOT NULL DEFAULT '',
+        kind TEXT NOT NULL DEFAULT '',
+        issns TEXT NOT NULL DEFAULT '',
+        openalex_id TEXT NOT NULL DEFAULT '',
+        mean2y REAL,
+        h_index INTEGER,
+        sjr REAL,
+        sjr_quartile TEXT NOT NULL DEFAULT '',
+        sjr_year INTEGER,
+        jif REAL,
+        jif_quartile TEXT NOT NULL DEFAULT '',
+        jif_year INTEGER,
+        updated_at TEXT NOT NULL DEFAULT ''
+    );
+    CREATE TABLE IF NOT EXISTS sjr (
+        issn TEXT PRIMARY KEY,
+        title TEXT NOT NULL DEFAULT '',
+        sjr REAL,
+        quartile TEXT NOT NULL DEFAULT '',
+        h_index INTEGER,
+        year INTEGER
+    );
+    SQL);
+
     foreach (['pages', 'posts'] as $table) {
         $cols = array_column($pdo->query("PRAGMA table_info($table)")->fetchAll(), 'name');
         if (!in_array('review_status', $cols, true)) {

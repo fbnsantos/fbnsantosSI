@@ -294,7 +294,8 @@ function show_research(string $tab): void
 {
     research_sync_in_background();
     $type = (string) ($_GET['tipo'] ?? '');
-    if ($type !== '' && ($tab !== 'pubs' || !isset(PUB_TYPES[$type]))) {
+    $byCites = ($_GET['ordem'] ?? '') === 'citacoes';
+    if (($type !== '' && ($tab !== 'pubs' || !isset(PUB_TYPES[$type]))) || (isset($_GET['ordem']) && !$byCites)) {
         redirect($tab === 'pubs' ? '/research' : '/research/projects', 301);
     }
     $pubCount = (int) db()->query('SELECT COUNT(*) FROM publications WHERE visible = 1')->fetchColumn();
@@ -320,10 +321,11 @@ function show_research(string $tab): void
     $featured = [];
     $items = [];
     if ($tab === 'pubs') {
-        $st = db()->prepare('SELECT * FROM publications WHERE visible = 1' . ($type ? ' AND type = ?' : '') . ' ORDER BY year DESC, pub_date DESC, id DESC');
+        $st = db()->prepare('SELECT * FROM publications WHERE visible = 1' . ($type ? ' AND type = ?' : '')
+            . ($byCites ? ' ORDER BY COALESCE(citations, 0) DESC, year DESC' : ' ORDER BY year DESC, pub_date DESC, id DESC'));
         $st->execute($type ? [$type] : []);
         $items = $st->fetchAll();
-        $featured = $type === '' ? array_values(array_filter($items, fn($p) => $p['featured'])) : [];
+        $featured = $type === '' && !$byCites ? array_values(array_filter($items, fn($p) => $p['featured'])) : [];
         $parts = array_map(fn($p) => array_filter([
             '@type' => 'ScholarlyArticle',
             'name' => $p['title'],
@@ -354,7 +356,7 @@ function show_research(string $tab): void
         'title' => $tabTitle . ' — ' . $title . ($type !== '' ? ' — ' . pub_type_label($type) : ''),
         'description' => $description,
         'path' => $path . ($type !== '' ? '?tipo=' . $type : ''),
-        'noindex' => $type !== '',
+        'noindex' => $type !== '' || $byCites,
         'schema' => [
             [
                 '@type' => 'CollectionPage',
@@ -369,7 +371,8 @@ function show_research(string $tab): void
         ],
     ];
     track_view('research');
-    render('research', compact('tab', 'type', 'types', 'items', 'featured', 'summary', 'title', 'meta'));
+    $impact = research_impact_summary();
+    render('research', compact('tab', 'type', 'byCites', 'types', 'items', 'featured', 'summary', 'impact', 'title', 'meta'));
 }
 
 function not_found(): void

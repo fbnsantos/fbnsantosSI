@@ -530,6 +530,9 @@ function research_sync(bool $force = false): string
         $ok = $ok && is_int($r);
         $log[] = is_int($r) ? "Authenticus: $r publicação(ões) nova(s)" : "Authenticus: $r";
     }
+    $r = impact_sync();
+    $ok = $ok && is_int($r);
+    $log[] = is_int($r) ? "OpenAlex: citações de $r publicação(ões) atualizadas" : "OpenAlex: $r";
     $msg = implode(' · ', $log) . '.';
     setting_set('research_sync_log', date('d/m/Y H:i') . ' — ' . $msg);
     setting_set('research_sync_ok', $ok ? '1' : '0');

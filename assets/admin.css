@@ -225,3 +225,21 @@ details.card[open] > summary { margin-bottom: 14px; }
 .stats-range + .research-filter { margin-top: 14px; }
 .research-table td:nth-child(2) { width: 62%; min-width: 260px; }
 .research-table td:nth-child(4) { white-space: normal; }
+.impact-summary { display: flex; flex-wrap: wrap; gap: 14px 40px; align-items: baseline; }
+.impact-summary div { display: flex; flex-direction: column; }
+.impact-summary b { font-size: 1.8rem; line-height: 1.1; }
+.impact-summary span { font-size: 0.8rem; color: var(--muted); }
+.impact-summary .hint { flex-basis: 100%; margin: 0; }
+.q { display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 0 7px; border-radius: 99px; background: #eee; color: #444; }
+.q.q1 { background: #dcfce7; color: #166534; }
+.q.q2 { background: #e0f2fe; color: #075985; }
+.q.q3 { background: #fef3c7; color: #92400e; }
+.q.q4 { background: #f3f4f6; color: #4b5563; }
+.journals-table td { vertical-align: middle; }
+.jif-form { display: flex; gap: 6px; align-items: center; margin: 0; }
+.jif-form input, .jif-form select { width: 70px; margin: 0; padding: 4px 6px; }
+.jif-form select { width: 64px; }
+.journals-table td:last-child { min-width: 300px; }
+.jif-form input:not([type=checkbox]):not([type=file]), .jif-form select { width: 68px; flex: 0 0 68px; margin: 0; padding: 5px 6px; }
+.jif-form select { width: 66px; flex-basis: 66px; }
+.journals-table { display: block; overflow-x: auto; }

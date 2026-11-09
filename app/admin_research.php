@@ -15,6 +15,15 @@ function route_admin_research(string $sub, string $method): bool
         $msg = research_sync(true);
         flash('Sincronizado. ' . $msg, setting('research_sync_ok') === '1' ? 'ok' : 'error');
         redirect('/admin/research');
+    } elseif ($sub === '/research/impact' && $method === 'POST') {
+        $key = trim((string) ($_POST['openalex_key'] ?? ''));
+        setting_set('openalex_key', preg_match('/^[\w-]{0,100}$/', $key) ? $key : '');
+        flash('Guardado.');
+        redirect('/admin/research?tab=revistas');
+    } elseif ($sub === '/research/sjr' && $method === 'POST') {
+        research_sjr_upload();
+    } elseif (preg_match('#^/research/journal/([0-9X]{7,8})$#', $sub, $m) && $method === 'POST') {
+        research_journal_save($m[1]);
     } elseif ($sub === '/research/bulk' && $method === 'POST') {
         research_bulk();
     } elseif (preg_match('#^/research/(pub|project)/(new|\d+)$#', $sub, $m)) {
@@ -41,6 +50,21 @@ function research_back(string $kind): string
 function admin_research(): void
 {
     research_sync_in_background();
+    if (($_GET['tab'] ?? '') === 'revistas') {
+        admin_render('research-journals', [
+            'title' => 'Investigação — revistas',
+            'journals' => db()->query("SELECT j.*, COUNT(p.id) AS pubs, SUM(COALESCE(p.citations, 0)) AS cites FROM journals j
+                LEFT JOIN publications p ON p.issn = j.issn GROUP BY j.issn ORDER BY pubs DESC, j.name")->fetchAll(),
+            'counts' => [
+                'pubs' => (int) db()->query('SELECT COUNT(*) FROM publications')->fetchColumn(),
+                'projects' => (int) db()->query('SELECT COUNT(*) FROM projects')->fetchColumn(),
+                'journals' => (int) db()->query('SELECT COUNT(*) FROM journals')->fetchColumn(),
+            ],
+            'sjrRows' => (int) db()->query('SELECT COUNT(*) FROM sjr')->fetchColumn(),
+            'impact' => research_impact_summary(),
+        ]);
+        return;
+    }
     $tab = ($_GET['tab'] ?? '') === 'projetos' ? 'projects' : 'pubs';
     $q = trim((string) ($_GET['q'] ?? ''));
     $type = (string) ($_GET['tipo'] ?? '');
@@ -75,6 +99,7 @@ function admin_research(): void
         'counts' => [
             'pubs' => (int) db()->query('SELECT COUNT(*) FROM publications')->fetchColumn(),
             'projects' => (int) db()->query('SELECT COUNT(*) FROM projects')->fetchColumn(),
+            'journals' => (int) db()->query('SELECT COUNT(*) FROM journals')->fetchColumn(),
             'types' => db()->query('SELECT type, COUNT(*) FROM publications GROUP BY type')->fetchAll(PDO::FETCH_KEY_PAIR),
         ],
     ]);
@@ -201,6 +226,54 @@ function research_item_save(string $kind, string $id): void
     }
     flash('Guardado.');
     redirect('/admin/research' . ($kind === 'project' ? '?tab=projetos' : ''));
+}
+
+/** Ficheiro da Scimago: enviado pelo formulário ou, se for grande demais para o upload, deixado em data/. */
+function research_sjr_upload(): void
+{
+    $file = null;
+    $err = $_FILES['sjr_file']['error'] ?? UPLOAD_ERR_NO_FILE;
+    if ($err === UPLOAD_ERR_OK) {
+        $file = $_FILES['sjr_file']['tmp_name'];
+    } elseif ($err === UPLOAD_ERR_INI_SIZE || $err === UPLOAD_ERR_FORM_SIZE) {
+        flash('O ficheiro é maior do que o servidor aceita (' . ini_get('upload_max_filesize') . '). Envie-o pelo Gestor de Ficheiros do cPanel para a pasta data/ com o nome scimagojr.csv e clique em "Importar de data/".', 'error');
+        redirect('/admin/research?tab=revistas');
+    } elseif (isset($_POST['from_data'])) {
+        $file = ROOT . '/data/scimagojr.csv';
+        if (!is_file($file)) {
+            flash('Não encontrei data/scimagojr.csv.', 'error');
+            redirect('/admin/research?tab=revistas');
+        }
+    }
+    if (!$file) {
+        flash('Escolha o ficheiro descarregado da Scimago.', 'error');
+        redirect('/admin/research?tab=revistas');
+    }
+    @set_time_limit(300);
+    $r = sjr_import($file);
+    if (is_array($r)) {
+        $matched = (int) db()->query("SELECT COUNT(*) FROM journals WHERE sjr_quartile <> ''")->fetchColumn();
+        flash("SJR {$r[1]} importado: {$r[0]} revistas lidas; $matched das suas revistas/séries têm quartil.");
+    } else {
+        flash($r, 'error');
+    }
+    redirect('/admin/research?tab=revistas');
+}
+
+/** Impact Factor e quartil JCR escritos à mão (não há fonte aberta). */
+function research_journal_save(string $issn): void
+{
+    $num = function (string $k): ?float {
+        $v = str_replace(',', '.', trim((string) ($_POST[$k] ?? '')));
+        return is_numeric($v) ? round((float) $v, 3) : null;
+    };
+    $q = strtoupper(trim((string) ($_POST['jif_quartile'] ?? '')));
+    $year = (int) ($_POST['jif_year'] ?? 0);
+    db()->prepare('UPDATE journals SET jif = ?, jif_quartile = ?, jif_year = ? WHERE issn = ?')->execute([
+        $num('jif'), preg_match('/^Q[1-4]$/', $q) ? $q : '', $year >= 1990 && $year <= 2100 ? $year : null, $issn,
+    ]);
+    flash('Guardado.');
+    redirect('/admin/research?tab=revistas#j' . $issn);
 }
 
 /** Itens sincronizados são escondidos (a sincronização voltaria a criá-los); só os manuais são apagados. */

@@ -1,8 +1,9 @@
 <?php
 $byYear = [];
 foreach ($tab === 'pubs' ? $items : [] as $p) {
-    $byYear[$p['year'] ?: t('Sem data')][] = $p;
+    $byYear[$byCites ? t('Mais citadas') : ($p['year'] ?: t('Sem data'))][] = $p;
 }
+$qs = fn(array $over) => ($q = http_build_query(array_filter(array_merge(['tipo' => $type, 'ordem' => $byCites ? 'citacoes' : ''], $over)))) ? "/research?$q" : '/research';
 ?>
 <header class="page-head">
     <div class="wrap-wide">
@@ -12,6 +13,11 @@ foreach ($tab === 'pubs' ? $items : [] as $p) {
             <?php if ($summary['pubs']): ?><div><dt><?= e(t('Publicações')) ?></dt><dd><?= $summary['pubs'] ?></dd></div><?php endif; ?>
             <?php if ($summary['articles']): ?><div><dt><?= e(t('Artigos em revista')) ?></dt><dd><?= $summary['articles'] ?></dd></div><?php endif; ?>
             <?php if ($summary['indexed']): ?><div><dt><?= e(t('Indexadas Scopus / WoS')) ?></dt><dd><?= $summary['indexed'] ?></dd></div><?php endif; ?>
+            <?php if ($impact['has']): ?>
+                <div><dt><?= e(t('Citações')) ?></dt><dd><?= e(number_format($impact['citations'], 0, ',', site_is_pt() ? ' ' : ',')) ?></dd></div>
+                <div><dt title="<?= e(t('h publicações com pelo menos h citações cada')) ?>"><?= e(t('Índice h')) ?></dt><dd><?= $impact['h'] ?></dd></div>
+                <?php if ($impact['q1']): ?><div><dt><?= e(t('Publicações em Q1')) ?></dt><dd><?= $impact['q1'] ?></dd></div><?php endif; ?>
+            <?php endif; ?>
             <?php if ($summary['projects']): ?><div><dt><?= e(t('Projetos')) ?></dt><dd><?= $summary['projects'] ?></dd></div><?php endif; ?>
         </dl>
         <?php if ($summary['pubs'] && $summary['projects']): ?>
@@ -34,6 +40,7 @@ foreach ($tab === 'pubs' ? $items : [] as $p) {
                     <h3><?php if ($href): ?><a href="<?= e($href) ?>" target="_blank" rel="noopener"><?= e($p['title']) ?></a><?php else: ?><?= e($p['title']) ?><?php endif; ?></h3>
                     <?php if ($p['authors']): ?><p class="rs-authors"><?= research_authors_html($p['authors']) ?></p><?php endif; ?>
                     <?php if ($p['venue']): ?><p class="rs-venue"><?= e($p['venue']) ?></p><?php endif; ?>
+                    <?php if ($badges = pub_impact_html($p)): ?><p class="rs-meta"><?= $badges ?></p><?php endif; ?>
                 </li>
             <?php endforeach; ?>
         </ul>
@@ -42,10 +49,16 @@ foreach ($tab === 'pubs' ? $items : [] as $p) {
     <div class="rs-tools">
         <?php if (count($types) > 1): ?>
             <nav class="hl-filter" aria-label="<?= e(t('Filtrar')) ?>">
-                <a href="/research"<?= $type === '' ? ' aria-current="page"' : '' ?>><?= e(t('Tudo')) ?></a>
+                <a href="<?= e($qs(['tipo' => ''])) ?>"<?= $type === '' ? ' aria-current="page"' : '' ?>><?= e(t('Tudo')) ?></a>
                 <?php foreach (PUB_TYPES as $k => $lbl): if (empty($types[$k])) continue; ?>
-                    <a href="/research?tipo=<?= $k ?>"<?= $type === $k ? ' aria-current="page"' : '' ?>><?= e(t($lbl)) ?> <span class="rs-n"><?= (int) $types[$k] ?></span></a>
+                    <a href="<?= e($qs(['tipo' => $k])) ?>"<?= $type === $k ? ' aria-current="page"' : '' ?>><?= e(t($lbl)) ?> <span class="rs-n"><?= (int) $types[$k] ?></span></a>
                 <?php endforeach; ?>
+            </nav>
+        <?php endif; ?>
+        <?php if ($impact['has']): ?>
+            <nav class="hl-filter rs-sort" aria-label="<?= e(t('Ordenar')) ?>">
+                <a href="<?= e($qs(['ordem' => ''])) ?>"<?= !$byCites ? ' aria-current="page"' : '' ?>><?= e(t('Por ano')) ?></a>
+                <a href="<?= e($qs(['ordem' => 'citacoes'])) ?>"<?= $byCites ? ' aria-current="page"' : '' ?>><?= e(t('Mais citadas')) ?></a>
             </nav>
         <?php endif; ?>
         <label class="rs-search">
@@ -70,7 +83,9 @@ foreach ($tab === 'pubs' ? $items : [] as $p) {
                             <?php if ($p['venue']): ?><span class="rs-venue"><?= e($p['venue']) ?></span><?php endif; ?>
                             <?php foreach (array_filter(explode(',', $p['indexed'])) as $ix): ?><span class="rs-badge"><?= e($ix) ?></span><?php endforeach; ?>
                             <?php if ($p['doi']): ?><a class="rs-doi" href="https://doi.org/<?= e($p['doi']) ?>" target="_blank" rel="noopener">DOI</a><?php endif; ?>
+                            <?php if ($byCites && $p['year']): ?><span><?= (int) $p['year'] ?></span><?php endif; ?>
                         </p>
+                        <?php if ($badges = pub_impact_html($p)): ?><p class="rs-meta rs-impact"><?= $badges ?></p><?php endif; ?>
                     </li>
                 <?php endforeach; ?>
             </ol>
@@ -108,6 +123,8 @@ foreach ($tab === 'pubs' ? $items : [] as $p) {
         <?= e(t('Fontes:')) ?>
         <?php if ($o = research_orcid_id()): ?><a href="https://orcid.org/<?= e($o) ?>" target="_blank" rel="me noopener">ORCID</a><?php endif; ?>
         <?php if ($a = research_authenticus_id()): ?> · <a href="<?= AUTHENTICUS ?>/en/profileOfResearchers/publicationsList/<?= e($a) ?>" target="_blank" rel="noopener">Authenticus</a><?php endif; ?>
+        <?php if ($impact['has']): ?> · <a href="https://openalex.org" target="_blank" rel="noopener">OpenAlex</a><?php endif; ?>
+        <?php if (setting('sjr_year')): ?> · <a href="https://www.scimagojr.com" target="_blank" rel="noopener">SCImago Journal Rank</a><?php endif; ?>
     </p>
 </div>
 <?php if ($tab === 'pubs'): ?>

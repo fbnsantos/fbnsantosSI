@@ -253,3 +253,14 @@ main { min-height: 60vh; padding-bottom: 72px; }
 .rs-status { padding: 1px 9px; border-radius: 99px; background: var(--bg); border: 1px solid var(--line); text-transform: none; letter-spacing: 0; }
 .rs-status.is-on { background: #e7f5ea; border-color: #b7dfc0; color: #1d6b34; }
 .rs-sources { margin-top: 36px; }
+.q { display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 0 8px; border-radius: 99px; background: #eee; color: #444; letter-spacing: .02em; }
+.q.q1 { background: #dcf3e2; color: #1d6b34; }
+.q.q2 { background: #e2eefb; color: #1e4f86; }
+.q.q3 { background: #fbefd6; color: #8a5a0b; }
+.q.q4 { background: #efebe8; color: #5f524b; }
+.rs-impact { margin-top: 5px; gap: 6px 10px; }
+.rs-if, .rs-cites { font-size: 0.8rem; color: var(--fg); }
+.rs-cites::before { content: "❝ "; color: var(--brick); }
+.rs-top { font-size: 0.72rem; font-weight: 700; padding: 0 8px; border-radius: 99px; background: var(--brick); color: #fff; }
+.rs-sort { margin: 0; }
+.rs-tools { row-gap: 10px; }

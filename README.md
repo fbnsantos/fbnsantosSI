@@ -199,6 +199,17 @@ vídeos do YouTube, publicações do LinkedIn e do Instagram e outros links. Ger
 - Itens sincronizados não se apagam (voltariam na sincronização seguinte): escondem-se. Os adicionados à mão podem ser apagados.
 - O nome do autor fica a negrito nas listas (variantes preenchidas a partir do ORCID e do Authenticus; editáveis).
 
+### Impacto (citações, quartil, fator de impacto)
+
+- **Citações**, FWCI e "Top 10% / 1%" de cada publicação: OpenAlex, pelo DOI, na sincronização diária. Com isto o site calcula
+  o total de citações, o índice h e o i10. Chave gratuita do OpenAlex opcional (Investigação → Revistas e impacto).
+- **Quartil**: SJR da Scimago. A Scimago não deixa descarregar automaticamente, por isso uma vez por ano: scimagojr.com/journalrank.php →
+  *Download data* → enviar o CSV em **Revistas e impacto** (se for grande demais para o upload: pôr em `data/scimagojr.csv` pelo cPanel e
+  clicar em *Importar de data/*).
+- **Fator de impacto**: o JIF/quartil JCR (Clarivate) não tem fonte aberta; pode ser escrito à mão por revista e passa a ter prioridade.
+  Sem ele, o site mostra o "impacto a 2 anos" do OpenAlex (citações médias por artigo nos 2 anos anteriores — a fórmula do JIF com dados abertos).
+- Em `/research`, cada publicação mostra quartil, impacto da revista, citações e Top 10%; há ainda a ordenação "Mais citadas".
+
 ## Estatísticas
 
 O backoffice tem **Estatísticas** (`/admin/stats`): visualizações e visitantes por dia, páginas mais vistas,
