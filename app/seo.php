@@ -157,7 +157,7 @@ function seo_head(array $m): string
     $h[] = '<meta name="description" content="' . e($desc) . '">';
     $h[] = '<link rel="canonical" href="' . e($url) . '">';
     $h[] = '<meta name="robots" content="' . ($noindex
-        ? 'noindex, nofollow'
+        ? 'noindex, follow'
         : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1') . '">';
     $h[] = '<meta name="author" content="' . e(setting('author_name', $site)) . '">';
 
