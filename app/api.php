@@ -10,6 +10,7 @@
  *   GET|POST            /api/pages        idem para páginas
  *   GET|PATCH|DELETE    /api/pages/{id}
  *   GET|POST            /api/media        listar / enviar imagens (multipart "file" ou JSON base64)
+ *   /api/doc…                             documentos Markdown, cada um com a sua chave (ver app/docs.php)
  *
  * Autenticação: "Authorization: Bearer <chave>" (ou "X-API-Key: <chave>").
  * As chaves criam-se no backoffice em "API / IA"; guarda-se só o hash SHA-256.
@@ -40,6 +41,11 @@ function route_api(string $sub, string $method): void
         }
         if ($sub === '/openapi.json' && $method === 'GET') {
             api_send(api_openapi());
+        }
+        // Documentos Markdown: autenticados pela chave do próprio documento, não pelas chaves da API.
+        if ($sub === '/doc' || str_starts_with($sub, '/doc/')) {
+            require_once ROOT . '/app/docs.php';
+            route_api_doc(substr($sub, 4), $method);
         }
 
         $token = api_auth();
@@ -449,6 +455,7 @@ function api_index(): array
         'version' => '1',
         'openapi' => abs_url('/api/openapi.json'),
         'auth' => 'Authorization: Bearer <chave> (criada no backoffice em API / IA)',
+        'documents' => 'Documentos Markdown: ' . abs_url('/api/doc/openapi.json') . ' (chave própria de cada documento)',
     ];
 }
 

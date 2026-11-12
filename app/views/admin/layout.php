@@ -9,6 +9,7 @@ $nav = [
     '/admin/highlights' => 'Destaques',
     '/admin/research' => 'Investigação',
     '/admin/activities' => 'Palestras e prémios',
+    '/admin/docs' => 'Documentos MD',
     '/admin/media' => 'Imagens',
     '/admin/social' => 'Redes sociais',
     '/admin/settings' => 'Definições',

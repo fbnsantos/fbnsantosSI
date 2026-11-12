@@ -157,6 +157,50 @@
         });
     }
 
+    // Editor de Markdown (EasyMDE) dos documentos MD.
+    const mdArea = document.getElementById('md-content');
+    if (window.EasyMDE && mdArea) {
+        const mde = new EasyMDE({
+            element: mdArea,
+            forceSync: true,
+            spellChecker: false,
+            autoDownloadFontAwesome: false, // carregado na vista, com SRI
+            minHeight: '480px',
+            status: ['lines', 'words', 'cursor'],
+            placeholder: 'Escreva em Markdown…',
+            toolbar: ['bold', 'italic', 'strikethrough', 'heading-2', 'heading-3', '|', 'quote', 'unordered-list', 'ordered-list',
+                'table', 'code', 'link', 'horizontal-rule', '|', 'preview', 'side-by-side', 'fullscreen', '|', 'undo', 'redo', 'guide'],
+            // O texto pode vir de assistentes de IA: a pré-visualização nunca executa HTML ativo.
+            renderingConfig: { sanitizerFunction: (html) => window.DOMPurify ? DOMPurify.sanitize(html) : html.replace(/</g, '&lt;') },
+            shortcuts: { togglePreview: 'Cmd-Alt-P' },
+        });
+        const mdForm = mdArea.form;
+        mde.codemirror.on('change', () => mdArea.dispatchEvent(new Event('input', { bubbles: true })));
+        mde.codemirror.setOption('extraKeys', {
+            ...mde.codemirror.getOption('extraKeys'),
+            'Cmd-S': () => mdForm.requestSubmit(),
+            'Ctrl-S': () => mdForm.requestSubmit(),
+        });
+
+        // Avisa quando outra pessoa ou um assistente grava uma versão nova.
+        const versionUrl = mdForm.dataset.docVersionUrl;
+        const banner = document.querySelector('[data-doc-changed]');
+        let known = +mdForm.dataset.docVersion;
+        const check = async () => {
+            if (document.hidden) return;
+            try {
+                const r = await fetch(versionUrl, { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
+                const j = await r.json();
+                if (j.version > known) {
+                    known = j.version;
+                    banner.querySelector('[data-doc-changed-by]').textContent = `versão ${j.version}, ${j.updated_by}`;
+                    banner.hidden = false;
+                }
+            } catch (_) {}
+        };
+        if (versionUrl && banner) setInterval(check, 20000);
+    }
+
     // Aviso ao sair com alterações por guardar.
     const form = document.getElementById('editor-form');
     if (form) {

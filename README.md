@@ -167,6 +167,24 @@ API REST em `/api` para criar e editar artigos, páginas e imagens. Especificaç
 curl -H "Authorization: Bearer <chave>" https://fbnsantos.com/api/posts
 ```
 
+## Documentos MD (partilhados com assistentes de IA)
+
+Backoffice → **Documentos MD**: documentos em Markdown privados (não aparecem no site), com editor (EasyMDE, pré-visualização
+lado a lado) e histórico de versões. Servem para planear e escrever em conjunto com o ChatGPT, o Claude, etc.
+
+- **Uma chave por documento** (`md_…`): dá acesso só a esse documento. Pode ser recriada (revoga a anterior) e o acesso
+  pode ficar em *Só ler*. Guarda-se o hash e uma cópia cifrada (como as chaves da API), para a mostrar na prompt.
+- Cada documento tem a secção **Prompt para o assistente**: texto pronto a colar com o endereço, a chave, os endpoints,
+  exemplos e as regras. As *Notas para o assistente* do documento entram na prompt.
+- API em `/api/doc` (OpenAPI em `/api/doc/openapi.json`), com `Authorization: Bearer <chave do documento>`:
+  `GET` (JSON com título, versão, índice de títulos e texto; `?format=md` só o Markdown), `POST /append` (no fim ou no
+  fim de uma secção), `PATCH` (troca de excertos exatos), `PUT` (substituir tudo), `GET /history[/{versão}]`.
+  Só para leitura aceita também `?key=` no link, para assistentes que só abrem URLs.
+- Cada gravação (backoffice ou API) cria uma versão com autor e nota; guardam-se as últimas 200 e qualquer uma pode ser reposta.
+  As escritas levam `base_version`: se o documento mudou entretanto, a API responde 409 em vez de escrever por cima;
+  no editor aparece um aviso quando um assistente grava uma versão nova.
+- O texto vindo da API é tratado como não confiável: a pré-visualização passa pelo DOMPurify.
+
 ## Redes sociais e Destaques
 
 **Do site para o LinkedIn** (`app/linkedin.php`): no fundo do editor de cada artigo ou página publicada há o cartão

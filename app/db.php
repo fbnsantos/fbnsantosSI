@@ -238,6 +238,32 @@ function migrate(PDO $pdo): void
         h_index INTEGER,
         year INTEGER
     );
+    CREATE TABLE IF NOT EXISTS md_docs (
+        id INTEGER PRIMARY KEY,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL DEFAULT '',
+        instructions TEXT NOT NULL DEFAULT '',
+        access TEXT NOT NULL DEFAULT 'write',
+        key_hash TEXT NOT NULL UNIQUE,
+        key_prefix TEXT NOT NULL,
+        key_enc TEXT NOT NULL DEFAULT '',
+        version INTEGER NOT NULL DEFAULT 1,
+        updated_by TEXT NOT NULL DEFAULT '',
+        last_api_at TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS md_doc_revisions (
+        id INTEGER PRIMARY KEY,
+        doc_id INTEGER NOT NULL REFERENCES md_docs(id) ON DELETE CASCADE,
+        version INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        source TEXT NOT NULL DEFAULT '',
+        note TEXT NOT NULL DEFAULT '',
+        created_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS md_doc_revisions_doc ON md_doc_revisions (doc_id, id);
     SQL);
 
     foreach (['pages', 'posts'] as $table) {
