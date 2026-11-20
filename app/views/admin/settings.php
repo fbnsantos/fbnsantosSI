@@ -58,7 +58,8 @@ $area = function (string $name, string $label, string $placeholder = '', string 
             <?php $field('social_youtube', 'YouTube', 'https://www.youtube.com/@…', 'url'); ?>
             <?php $field('social_instagram', 'Instagram', 'https://www.instagram.com/…', 'url'); ?>
             <?php $field('social_scholar', 'Google Scholar', 'https://scholar.google.com/citations?user=…', 'url'); ?>
-            <?php $field('social_orcid', 'ORCID', 'https://orcid.org/0000-…', 'url'); ?>
+            <?php $field('social_orcid', 'ORCID', 'https://orcid.org/0000-…', 'url',
+                'Pode deixar vazio se o ORCID iD estiver em <a href="/admin/research">Investigação</a>: o link é criado a partir dele.'); ?>
             <?php $area('profile_links', 'Outros perfis (um por linha: Nome | URL)', 'Scopus | https://www.scopus.com/…', 'Aparecem no topo da página inicial e ligam o site à sua identidade no Google.'); ?>
         </section>
 

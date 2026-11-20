@@ -22,6 +22,10 @@ function social_links(): array
     ];
     foreach ($map as $key => $label) {
         $url = setting($key);
+        // ORCID vazio aqui: usa o iD guardado em Investigação (basta preencher num dos sítios).
+        if ($key === 'social_orcid' && $url === '' && preg_match('/^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/', setting('research_orcid'))) {
+            $url = 'https://orcid.org/' . setting('research_orcid');
+        }
         if ($url !== '' && preg_match('#^https?://#i', $url)) {
             $links[$label] = $url;
         }
